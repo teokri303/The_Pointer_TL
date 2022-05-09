@@ -1,3 +1,7 @@
+#gia datetime
+import datetime as dt
+import calendar as clnd
+
 #kivy things
 from kivy.lang import Builder
 from kivy.app import App
@@ -14,13 +18,78 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from functools import partial
 
+from kivy.uix.switch import Switch
+from kivy.uix.spinner import Spinner
+
 from kivy.uix.screenmanager import ScreenManager, Screen
 #gia map
 from kivy_garden.mapview import MapView
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapSource
 
+#gia na vgainoun diploi oi ari8moi sta spinners
+def double_number_function(last):
+    x = range(0,last)
+    arr = []
+    for k in x:
+        if len(str(k)) > 1:
+            arr.append(str(k))
+        else:
+            arr.append('0'+str(k))
+    return arr
 
+class Event_Creation_Layout(BoxLayout):
+
+    def __init__(self,**kwargs):
+        super(Event_Creation_Layout, self).__init__(**kwargs)
+        self.start_spinners()
+        self.ids.info_layout.event_datetimes_1.ids.se_label.text = "Start"
+        self.ids.info_layout.event_datetimes_2.ids.se_label.text = "End"
+
+    def start_spinners(self):
+        #prepei na pairnoun times
+        #gia spinners 1
+        self.ids.info_layout.event_datetimes_1.ids.spinner_year.values = [str(dt.datetime.today().year) , str(dt.datetime.today().year + 1)]
+        self.ids.info_layout.event_datetimes_1.ids.spinner_month.values = list(clnd.month_name[1:])
+        x = double_number_function(30)
+        self.ids.info_layout.event_datetimes_1.ids.spinner_day.values = x[1:]
+        del(x)
+        self.ids.info_layout.event_datetimes_1.ids.spinner_hour.values = double_number_function(24)
+        self.ids.info_layout.event_datetimes_1.ids.spinner_minute.values = double_number_function(60)
+
+        #gia spinners 2
+        self.ids.info_layout.event_datetimes_2.ids.spinner_year.values = [str(dt.datetime.today().year) , str(dt.datetime.today().year + 1)]
+        self.ids.info_layout.event_datetimes_2.ids.spinner_month.values = list(clnd.month_name[1:])
+        x = double_number_function(30)
+        self.ids.info_layout.event_datetimes_2.ids.spinner_day.values = x[1:]
+        del(x)
+        self.ids.info_layout.event_datetimes_2.ids.spinner_hour.values = double_number_function(24)
+        self.ids.info_layout.event_datetimes_2.ids.spinner_minute.values = double_number_function(60)
+
+#ta spinner mou
+class SpinnerLayout(GridLayout):
+    pass
+#to main screen
+class Second_Screen(Screen):
+
+    def __init__(self,**kwargs):
+        super(Second_Screen, self).__init__(**kwargs)
+        mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
+        #vazw map
+        self.ids.aka.info_layout.add_widget(mmap)
+        self.ids.aka.info_layout.map_opp.cevent.bind(on_press=self.create_event)
+
+    #dhmiourgia event
+    def create_event(self,instance,**kwargs):#den exw ftiaksei to antistoixo
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.manager.children[0].ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        #vazw to profile
+        p = Event_Creation_Layout()
+        self.manager.children[0].ids.aka.info_layout.add_widget(p)
+
+        return self.manager
+#Log In Screen
 class First_Screen(Screen):
     usr = None
     mmlayer = None
@@ -81,14 +150,6 @@ class First_Screen(Screen):
         self.manager.add_widget(msc)
         self.manager.current = 'second_light'
         return self.manager
-
-class Second_Screen(Screen):
-
-    def __init__(self,**kwargs):
-        super(Second_Screen, self).__init__(**kwargs)
-        mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
-        #vazw map
-        self.ids.aka.info_layout.add_widget(mmap)
 
 class Main_App(App):
 

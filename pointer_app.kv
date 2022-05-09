@@ -1,4 +1,136 @@
+#to spinner sta events
+<ESpinner@Spinner>:
+    size_hint : .3, .6
+    sync_height : True
 
+<PrivateSw@Switch>:
+    values: ['Public', 'Private']
+    canvas:
+        Color:
+            rgb: 0.2, 0.709, 0.898, 1
+        Rectangle:
+            size: [sp(41.5), sp(20)]
+            pos: [self.center_x - sp(41.5), self.center_y - sp(10)]
+        Color:
+            rgb: 0.4, 0.4, 0.4, 1
+        Rectangle:
+            size: [sp(41.5), sp(20)]
+            pos: [self.center_x, self.center_y - sp(10)]
+    Label:
+        id : pub
+        text: '[b]{}[/b]'.format(root.values[0])
+        markup: True
+        font_size: 13
+        pos: [root.center_x - sp(70), root.center_y - sp(50)]
+    Label:
+        id : prv
+        color: 0.75, 0.75, 0.75, 1
+        text: '[b]{}[/b]'.format(root.values[1])
+        markup: True
+        font_size: 13
+        pos: [root.center_x - sp(30), root.center_y - sp(50)]
+
+<Cevent_Labels@TextInput>:
+    first_touch : False
+    multiline : False
+    size_hint : None , None
+
+#gia na ftiaxnw events
+<Event_Creation_Layout@BoxLayout> :
+    orientation : 'vertical'
+    pic_layout : pic_layout
+    info_layout : info_layout
+    Image :
+        id : pic_layout
+        source : 'src/88.png'
+        allow_stretch : True
+        size_hint : 1,.3
+    BoxLayout :
+        id : info_layout
+        subutton : subutton
+        name : name
+        points_earned : points_earned
+        points_loose : points_loose
+        privatesw : privatesw
+        capacity : capacity
+        event_datetimes_1 : event_datetimes_1
+        event_datetimes_2 : event_datetimes_2
+        orientation : 'vertical'
+        padding : [0,15,0,15]
+        spacing : 15
+	    canvas.before :
+            Color :
+                rgba : .975 , .485 , .255 , .85
+            Rectangle :
+                pos :self.pos
+                size : self.size
+        Cevent_Labels :
+            id : name
+            pos_hint : {'center_x' : .5}
+            size_hint : .6, .13
+            hint_text : 'Event Name'
+        Cevent_Labels :
+            id : points_earned
+            pos_hint : {'center_x' : .5}
+            size_hint : .6, .13
+            hint_text : 'Points Earned'
+        Cevent_Labels :
+            id : points_loose
+            pos_hint : {'center_x' : .5}
+            size_hint : .6, .13
+            hint_text : 'Points Loose'
+        Cevent_Labels :
+            id : capacity
+            pos_hint : {'center_x' : .5}
+            size_hint : .6, .13
+            hint_text : 'Capacity'
+        SpinnerLayout :
+            id : event_datetimes_1
+            pos_hint : {'center_x' : .5}
+            size_hint : .9, .1
+        SpinnerLayout :
+            id : event_datetimes_2
+            pos_hint : {'center_x' : .5}
+            size_hint : .9, .1
+        PrivateSw:
+            id : privatesw
+            pos_hint : {'center_x' : .5}
+            size_hint : .6, .05
+        Button :
+            id : subutton
+            text : 'Submit'
+            pos_hint : {'center_x' : .5}
+            size_hint : .4, .13
+<SpinnerLayout@GridLayout>
+    start : root.start
+    cols : 6
+    #start
+    se_label : se_label
+    spinner_year : spinner_year
+    spinner_month : spinner_month
+    spinner_day : spinner_day
+    spinner_hour : spinner_hour
+    spinner_minute : spinner_minute
+
+    Label :
+        id : se_label
+        text : 'Start'
+        size_hint_x : 0.3
+    ESpinner:
+        id : spinner_year
+        text : 'Year'
+    ESpinner:
+        id : spinner_month
+        text : 'Month'
+    ESpinner:
+        id : spinner_day
+        text : 'Day'
+    ESpinner:
+        id : spinner_hour
+        text : 'Hour'
+    ESpinner:
+        id : spinner_minute
+        text : 'Minute'
 
 <Second_Screen@Screen>
     aka : aka
