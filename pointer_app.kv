@@ -1,0 +1,141 @@
+
+
+<Second_Screen@Screen>
+    aka : aka
+    options_layout : options_layout
+    BoxLayout:
+        id : aka
+        info_layout : info_layout
+        orientation : 'horizontal'
+        canvas.before:
+            Color:
+                rgba: .975 , .485 , .255 , .85
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        BoxLayout:
+            id : info_layout
+            map_opp : map_opp
+            orientation: 'vertical'
+            canvas.before:
+                Color:
+                    rgba: .975 , .485 , .255 , .85
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            MapOptions:
+                id : map_opp
+                size_hint:  (1,.1)
+        Control_Buttons :
+            id : options_layout
+#ta options tou map
+<MapOptions@BoxLayout>:
+    #buttons
+    cevent : cevent
+    mpos : mpos
+    friends_button : friends_button
+
+    orientation : 'horizontal'
+    canvas.before:
+        Color:
+            rgba: .975 , .485 , .255 , .85
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Button :
+        id : cevent
+        text : "Create Event"
+    Button :
+        id : mpos
+        text : "My Position"
+    Button :
+        id : friends_button
+        text : "Friends"
+
+#oti 8a uparxei sta plagia gia leitourgies
+<Control_Buttons@BoxLayout> :
+    #buttons
+    map_button : map_button
+    profile_button : profile_button
+    friends_button : friends_button
+    friend_requ_button : friend_requ_button
+    invitation_button : invitation_button
+    events_button : events_button
+    settings_button : settings_button
+
+    size_hint_x : .3
+    orientation : 'vertical'
+    canvas.before:
+        Color:
+            rgba: .975 , .485 , .255 , .85
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Button :
+        id : map_button
+        text : "Map"
+    Button :
+        id : profile_button
+        text : "Profile"
+    Button :
+        id : friends_button
+        text : "Friends"
+    Button :
+        id : friend_requ_button
+        text : "Friend\nRequests"
+        multiline : True
+    Button :
+        id : events_button
+        text : "Events"
+    Button :
+        id : invitation_button
+        text : "Invite At Event"
+    Button :
+        id : settings_button
+        text : "Settings"
+
+<Log_Inputs@TextInput>
+    first_touch : False
+    multiline : False
+    size : 200 , 35
+    size_hint : None , None
+
+<First_Screen@Screen>
+    aka : aka
+    RelativeLayout:
+        id : aka
+        login_bttn : login_bttn
+        reg_bttn : reg_bttn
+        us_inp : us_inp
+        email_inp : email_inp
+        passw_inp : passw_inp
+        canvas.before:
+            Color:
+                rgba: .975 , .485 , .255 , .85
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Log_Inputs :
+            id : us_inp
+            pos_hint : {'center_x' : 0.5 , 'center_y' : 0.8}
+        Log_Inputs :
+            id : email_inp
+            pos_hint : {'center_x' : 0.5 , 'center_y' : 0.65}
+        Log_Inputs :
+            id : passw_inp
+            password : True
+            pos_hint : {'center_x' : 0.5 , 'center_y' : 0.5}
+        Button :
+            id : login_bttn
+            text : "Log In"
+            can_press : [False,False,False]
+            pos_hint : {'center_x' : 0.75 , 'center_y' : 0.1}
+            size : 110 , 50
+            size_hint : None , None
+        Button :
+            id : reg_bttn
+            text : "Register"
+            can_press : [False,False,False]
+            pos_hint : {'center_x' : 0.25 , 'center_y' : 0.1}
+            size : 110 , 50
+            size_hint : None , None
