@@ -30,6 +30,64 @@
         font_size: 13
         pos: [root.center_x - sp(30), root.center_y - sp(50)]
 
+<Profile_Labels@Label>:
+    markup : True
+    size_hint_y : None
+    text_size : self.width,None
+    canvas.before :
+        Color :
+            rgba : .5 , .1 , .75 , .7
+        Rectangle :
+            pos :self.pos
+            size : self.size
+
+<Profile_Layout@BoxLayout> :
+    orientation : 'vertical'
+    pic_layout : pic_layout
+    info_layout : info_layout
+    xp_bar : xp_bar
+    Image :
+        id : pic_layout
+        source : 'me.jpg'
+        allow_stretch : True
+        size_hint : 1,.4
+    BoxLayout :
+        id : xp_bar
+        size_hint : 1,.05
+    BoxLayout :
+        id : info_layout
+        online : online
+        username : username
+        points : points
+        friends : friends
+        coordinates : coordinates
+        at_event : at_event
+        orientation : 'vertical'
+        Profile_Labels :
+            id : online
+            size_hint : 1,.2
+            text : "[color=ffffff] State : [/color]"
+        Profile_Labels :
+            id : username
+            size_hint : 1,.2
+            text : "[color=ffffff] Username : [/color]"
+        Profile_Labels :
+            id : points
+            size_hint : 1,.2
+            text : "[color=ffffff]Points : [/color]"
+        Profile_Labels :
+            id : friends
+            size_hint : 1,.2
+            text : "[color=ffffff] Friends : [/color]"
+        Profile_Labels :
+            id : coordinates
+            size_hint : 1,.2
+            text : "[color=ffffff] Coordinates : [/color]"
+        Profile_Labels :
+            id : at_event
+            size_hint : 1,.2
+            text : "[color=ffffff] At Event : [/color]"
+
 <Cevent_Labels@TextInput>:
     first_touch : False
     multiline : False

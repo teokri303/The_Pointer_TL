@@ -38,6 +38,18 @@ def double_number_function(last):
             arr.append('0'+str(k))
     return arr
 
+class Profile_Layout(BoxLayout):
+
+    def __init__(self,**kwargs):
+        super(Profile_Layout, self).__init__(**kwargs)
+
+        self.ids.info_layout.online.text = str(self.ids.info_layout.online.text)
+        self.ids.info_layout.username.text = str(self.ids.info_layout.username.text)
+        self.ids.info_layout.points.text = str(self.ids.info_layout.points.text)
+        self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)
+        self.ids.info_layout.coordinates.text = str(self.ids.info_layout.coordinates.text)
+        self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)
+
 class Event_Creation_Layout(BoxLayout):
 
     def __init__(self,**kwargs):
@@ -75,10 +87,20 @@ class Second_Screen(Screen):
     def __init__(self,**kwargs):
         super(Second_Screen, self).__init__(**kwargs)
         mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
+        #prepei na kanw bind tis leitourgies twn koumpiwn
+        self.ids.options_layout.map_button.bind(on_press=self.to_map)
+        #profile m
+        self.ids.options_layout.profile_button.bind(on_press=self.to_profile)
         #vazw map
         self.ids.aka.info_layout.add_widget(mmap)
         self.ids.aka.info_layout.map_opp.cevent.bind(on_press=self.create_event)
+    #gia na phgainw se map
+    def to_map(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        self.manager.children[0].ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
 
+        return self.manager
     #dhmiourgia event
     def create_event(self,instance,**kwargs):#den exw ftiaksei to antistoixo
         self.manager.current = 'second_light'
@@ -87,6 +109,16 @@ class Second_Screen(Screen):
         #vazw to profile
         p = Event_Creation_Layout()
         self.manager.children[0].ids.aka.info_layout.add_widget(p)
+
+        return self.manager
+    #to profile mu
+    def to_profile(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        #vazw to profile
+        p = Profile_Layout()
+        self.ids.aka.info_layout.add_widget(p)
 
         return self.manager
 #Log In Screen
@@ -163,9 +195,6 @@ class Main_App(App):
         return sm
 
 Builder.load_file('pointer_app.kv')
-
-
-
 
 if __name__ == "__main__":
     Main_App().run()
