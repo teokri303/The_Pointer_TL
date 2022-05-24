@@ -1,3 +1,4 @@
+from User import *
 #gia datetime
 import datetime as dt
 import calendar as clnd
@@ -27,6 +28,69 @@ from kivy_garden.mapview import MapView
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapSource
 
+#
+#FriendRequest class
+#
+class FriendRequest:
+    _id = None
+    _user1 = None
+    _user2 = None
+    _sended = None
+    _state_1 = None
+    _state_2 = None
+    def __init__(self,id,user1,user2,sended,state_1,state_2):
+        self._id = id
+        self._user1 = user1
+        self._user2 = user2
+        self._sended = sended
+        self._state_1 = state_1
+        self._state_2 = state_2
+
+    def set_user_1(self,user_1):
+        self._user1 = user_1
+    def set_user_2(self,user_2):
+        self._user2 = user_2
+    def set_sended(self,sended):
+        self._sended = sended
+    def set_state_1(self,state_1):
+        self._state_1 = state_1
+    def set_state_2(self,state_2):
+        self._state_2 = state_2
+
+    def get_user_1(self):
+        return self._user1
+    def get_user_2(self):
+        return self._user2
+    def get_sended(self):
+        return self._sended
+    def get_state_1(self):
+        return self._state_1
+    def get_state_2(self):
+        return self._state_2
+    def get_id(self):
+        return self._id
+
+    def accepted(self):
+        self._state_1 = 'Accepted'
+    def rejected(self):
+        self._state_1 = 'Rejected'
+        self._state_2 = 'Rejected'
+
+    def StringInfo(self):
+        return 'From : ' + self._user2 + '\nTo : ' + self._user1 + '\n ON : ' + self._sended.strftime("%m/%d/%Y, %H:%M:%S")
+
+    def DictInfo(self):
+        return {
+        "id" : self._id,
+        "self" : self._user2,
+        "you" : self._user1,
+        "state_1" : self._state_1,
+        "state_2" : self._state_2
+        }
+
+#
+#FriendRequest class
+#
 
 #
 #Event Class
@@ -179,6 +243,7 @@ class Event:
 #
 #Event Class
 #
+
 #gia na vgainoun diploi oi ari8moi sta spinners
 def double_number_function(last):
     x = range(0,last)
@@ -235,9 +300,11 @@ class SpinnerLayout(GridLayout):
     pass
 #to main screen
 class Second_Screen(Screen):
-
-    def __init__(self,**kwargs):
+    _usr = None
+    def __init__(self,usr = User(),**kwargs):
         super(Second_Screen, self).__init__(**kwargs)
+        self._usr = usr
+
         mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
         #prepei na kanw bind tis leitourgies twn koumpiwn
         self.ids.options_layout.map_button.bind(on_press=self.to_map)
@@ -330,7 +397,7 @@ class First_Screen(Screen):
             self.ids.aka.reg_bttn.disabled = True
 
     def to_main_screen(self,obj,**kwargs):
-        msc = Second_Screen(name = 'second_light')
+        msc = Second_Screen(name = 'second_light',usr = User(self.ids.aka.us_inp.text,self.ids.aka.email_inp.text))
         self.manager.add_widget(msc)
         self.manager.current = 'second_light'
         return self.manager
