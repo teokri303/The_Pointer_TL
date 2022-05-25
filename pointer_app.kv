@@ -92,6 +92,58 @@
     first_touch : False
     multiline : False
     size_hint : None , None
+#to main layout
+<FriendsRequLayout@BoxLayout>:
+    search4friends : search4friends
+    main_content : main_content
+    orientation : 'vertical'
+    BoxLayout :
+        id : search4friends
+        size_hint_y : 0.05
+        orientation : 'horizontal'
+
+    ScrollView :
+        id : main_content
+        friend_requests : friend_requests
+
+        do_scroll_x : False
+        do_scroll_y : True
+        always_overscroll : False
+
+        GridLayout :
+            height : self.minimum_height
+            id : friend_requests
+            cols : 1
+            spacing : 5
+            size_hint_y : None
+#to layout ka8e friend request
+<FriendRequest_Layout@BoxLayout>:
+    ena_request : None
+    size_hint_y : None
+    orientation : 'horizontal'
+    user_info : user_info
+    accept : accept
+    reject : reject
+    canvas.before :
+        Color :
+            rgba : .5 , .1 , .75 , .7
+        Rectangle :
+            pos :self.pos
+            size : self.size
+    Label :
+        id : user_info
+        size_hint_y : None
+        height : 50
+    Button :
+        id : accept
+        text : 'Accept'
+        size_hint_y : None
+        size_hint_x : 0.5
+    Button :
+        id : reject
+        text : 'Reject'
+        size_hint_y : None
+        size_hint_x : 0.5
 
 #gia na ftiaxnw events
 <Event_Creation_Layout@BoxLayout> :
@@ -159,6 +211,7 @@
             text : 'Submit'
             pos_hint : {'center_x' : .5}
             size_hint : .4, .13
+
 <SpinnerLayout@GridLayout>
     start : root.start
     cols : 6
@@ -192,7 +245,6 @@
 
 <Second_Screen@Screen>
     aka : aka
-    options_layout : options_layout
     BoxLayout:
         id : aka
         info_layout : info_layout
@@ -216,14 +268,13 @@
             MapOptions:
                 id : map_opp
                 size_hint:  (1,.1)
-        Control_Buttons :
-            id : options_layout
 #ta options tou map
 <MapOptions@BoxLayout>:
     #buttons
-    cevent : cevent
+    create_buttons : create_buttons
     mpos : mpos
     friends_button : friends_button
+    options_layout : options_layout
 
     orientation : 'horizontal'
     canvas.before:
@@ -232,57 +283,27 @@
         Rectangle:
             pos: self.pos
             size: self.size
-    Button :
-        id : cevent
-        text : "Create Event"
+    Create_Buttons:
+        id : create_buttons
     Button :
         id : mpos
         text : "My Position"
     Button :
         id : friends_button
         text : "Friends"
+    Control_Buttons :
+        id : options_layout
 
 #oti 8a uparxei sta plagia gia leitourgies
-<Control_Buttons@BoxLayout> :
+<Control_Buttons@Spinner> :
     #buttons
-    map_button : map_button
-    profile_button : profile_button
-    friends_button : friends_button
-    friend_requ_button : friend_requ_button
-    invitation_button : invitation_button
-    events_button : events_button
-    settings_button : settings_button
+    text : 'Map'
+    values : ["Map","Profile","Friends","Friend\nRequests","Events","Invite At Event","Settings"]
 
-    size_hint_x : .3
-    orientation : 'vertical'
-    canvas.before:
-        Color:
-            rgba: .975 , .485 , .255 , .85
-        Rectangle:
-            pos: self.pos
-            size: self.size
-    Button :
-        id : map_button
-        text : "Map"
-    Button :
-        id : profile_button
-        text : "Profile"
-    Button :
-        id : friends_button
-        text : "Friends"
-    Button :
-        id : friend_requ_button
-        text : "Friend\nRequests"
-        multiline : True
-    Button :
-        id : events_button
-        text : "Events"
-    Button :
-        id : invitation_button
-        text : "Invite At Event"
-    Button :
-        id : settings_button
-        text : "Settings"
+<Create_Buttons@Spinner> :
+    #buttons
+    text : 'Create'
+    values : ["Create Event"]
 
 <Log_Inputs@TextInput>
     first_touch : False

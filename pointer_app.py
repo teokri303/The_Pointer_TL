@@ -16,6 +16,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
+from kivy.uix.spinner import Spinner
 from kivy.uix.image import Image
 from functools import partial
 
@@ -28,6 +29,48 @@ from kivy_garden.mapview import MapView
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapSource
 
+#klaseis me layouts koumpia kai o8ones
+#to dropdown
+class Control_Buttons(Spinner):
+    pass
+#to dropdown
+class Create_Buttons(Spinner):
+    pass
+#to main content gia FriendRequests
+class FriendRequest_Layout(BoxLayout):
+    _friendrequest = None
+    _rm_callback = None
+    def __init__(self,friendrequest,rm_callback,**kwargs):
+        super(FriendRequest_Layout, self).__init__(**kwargs)
+        self._rm_callback = rm_callback
+        self._friendrequest = friendrequest
+        #ksereis oti prepei na to gemiseis
+        self.ids.user_info.text = self._friendrequest.StringInfo()
+        #8elw callback gia accept h reject
+        self.ids.accept.bind(on_press = self.accept_friend_request)
+        self.ids.reject.bind(on_press = self.reject_friend_request)
+
+#to main content && ScrollView gia FriendRequests
+class FriendsRequLayout(BoxLayout):
+    _user = None
+    _search_profile_callback = None
+    _friendrequest_dict = {}
+    def __init__(self,usr,tocallback_profile=None,**kwargs):
+        super(FriendsRequLayout, self).__init__(**kwargs)
+        #pairnw friend request apo vash
+        fr = []
+        self._user = usr#apo auto 8a parw info gia friend request
+        if len(fr) == 0:
+            self.ids.main_content.friend_requests.add_widget(Label(text = '\n\nIt\'s been quiet here...\nParticipate to Events to make new Friends !',font_size = '20px'))
+        for i in range(0,len(fr)):
+            f = FriendRequest_Layout(fr[i],rm_callback = self.remove_friend_request)
+            self._friendrequest_dict[str(fr[i].get_id())] = i
+            #f.bind(minimum_height = f.setter('height'))
+            self.ids.main_content.friend_requests.add_widget(f)
+
+    def remove_friend_request(self,anid):
+        self.ids.main_content.friend_requests.remove_widget(self.ids.main_content.friend_requests.children[self._friendrequest_dict[str(anid)]])
+#to main content && ScrollView gia FriendRequests
 #
 #FriendRequest class
 #
@@ -300,25 +343,60 @@ class SpinnerLayout(GridLayout):
     pass
 #to main screen
 class Second_Screen(Screen):
-    _usr = None
-    def __init__(self,usr = User(),**kwargs):
-        super(Second_Screen, self).__init__(**kwargs)
-        self._usr = usr
+    _user = None
 
-        mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
+    def __init__(self,usr ,**kwargs):
+        super(Second_Screen, self).__init__(**kwargs)
+        self._user = usr
+        self._user.set_online(1)
         #prepei na kanw bind tis leitourgies twn koumpiwn
-        self.ids.options_layout.map_button.bind(on_press=self.to_map)
-        #profile m
-        self.ids.options_layout.profile_button.bind(on_press=self.to_profile)
+        self.ids.aka.info_layout.map_opp.options_layout.bind(text=self.spinner_selected_value)
+        mmap = MapView(zoom=11, lat=25.55, lon=33.32,map_source=MapSource(min_zoom=3))
+        #otan 8elw na ftiaksw event ,tote mporw na create events
+        self.ids.aka.info_layout.map_opp.create_buttons.bind(text=self.to_create)
+        #8elw na emfanizw me kedro to position mou
+        #gia na paw se position                                                                                                                                 edw prepei na vazw alla pragmata...
+        self.ids.aka.info_layout.map_opp.mpos.bind(on_press=lambda instance: self.manager.children[0].ids.aka.info_layout.children[0].sync_to(MapView(zoom=11, lat=self._user.get_lat(), lon=self._user.get_lon(),map_source=MapSource(min_zoom=3))))
         #vazw map
         self.ids.aka.info_layout.add_widget(mmap)
-        self.ids.aka.info_layout.map_opp.cevent.bind(on_press=self.create_event)
+    #gia control Spinners
+    def spinner_selected_value(self,instance, value,**kwargs):
+        if self.ids.aka.info_layout.map_opp.options_layout.text == "Map":
+            self.to_map(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Profile":
+            self.to_profile(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Friends":
+            self.to_friends(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Friend\nRequests":
+            self.to_friend_requests(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Events":
+            self.to_events(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Invite At Event":
+            self.invitation_proc(None)
+        elif self.ids.aka.info_layout.map_opp.options_layout.text == "Settings":
+            self.to_settings(None)
+        #to allo arxikopoieitai
+        self.ids.aka.info_layout.map_opp.create_buttons.text = 'Create'
+    #gia create spinners
+    def to_create(self,instance, value,**kwargs):
+        if self.ids.aka.info_layout.map_opp.create_buttons.text == "Create Event":
+            self.create_event(None)
+        #to allo arxikopoieitai
+        self.ids.aka.info_layout.map_opp.options_layout.text = 'Control Buttons'
     #gia na phgainw se map
     def to_map(self,instance,**kwargs):
         self.manager.current = 'second_light'
         self.manager.children[0].ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
         mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
 
+        return self.manager
+    #paw se friend_requests
+    def to_friend_requests(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        fr = FriendsRequLayout(usr = self._user)
+        self.ids.aka.info_layout.add_widget(fr)
         return self.manager
     #dhmiourgia event
     def create_event(self,instance,**kwargs):#den exw ftiaksei to antistoixo
