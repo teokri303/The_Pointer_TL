@@ -18,8 +18,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.uix.image import Image
-from functools import partial
 
+from kivy.uix.popup import Popup
 from kivy.uix.switch import Switch
 from kivy.uix.spinner import Spinner
 
@@ -28,7 +28,23 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy_garden.mapview import MapView
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapSource
+#gia networking
+import requests
+import json
+#gia functions
+from functools import partial
 
+#klash gia sundesh
+class myConnection:
+    url = 'http://localhost:8080'
+    mdict = None
+    def __init__(self,mdict,url_plus):
+        self.mdict = mdict
+        self.url = self.url+'/'+url_plus
+
+    def send_dict(self):
+        x = requests.post(self.url, data = json.dumps(self.mdict))
+        return x
 #klaseis me layouts koumpia kai o8ones
 #to dropdown
 class Control_Buttons(Spinner):
@@ -130,11 +146,9 @@ class FriendRequest:
         "state_1" : self._state_1,
         "state_2" : self._state_2
         }
-
 #
 #FriendRequest class
 #
-
 #
 #Event Class
 #
@@ -286,7 +300,6 @@ class Event:
 #
 #Event Class
 #
-
 #gia na vgainoun diploi oi ari8moi sta spinners
 def double_number_function(last):
     x = range(0,last)
@@ -297,12 +310,13 @@ def double_number_function(last):
         else:
             arr.append('0'+str(k))
     return arr
-
+#
+#to profile tou xrhsth
+#
 class Profile_Layout(BoxLayout):
 
     def __init__(self,**kwargs):
         super(Profile_Layout, self).__init__(**kwargs)
-
         self.ids.info_layout.online.text = str(self.ids.info_layout.online.text)
         self.ids.info_layout.username.text = str(self.ids.info_layout.username.text)
         self.ids.info_layout.points.text = str(self.ids.info_layout.points.text)
@@ -388,7 +402,7 @@ class Second_Screen(Screen):
         self.manager.current = 'second_light'
         self.manager.children[0].ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
         mmap = MapView(zoom=11, lat=64.64, lon=37.37,map_source=MapSource(min_zoom=3))
-
+        self.manager.children[0].ids.aka.info_layout.add_widget(mmap)
         return self.manager
     #paw se friend_requests
     def to_friend_requests(self,instance,**kwargs):
@@ -430,18 +444,34 @@ class First_Screen(Screen):
         #vazw ton user
         #gia username text input
         self.ids.aka.us_inp.hint_text = "Username"
-        self.ids.aka.us_inp.bind(focus = self.on_my_focus)
+        self.ids.aka.us_inp.bind(focus = self.on_focus_username)
+        self.ids.aka.us_inp.text = 'Ceidas22'
         #gia email text input
         self.ids.aka.email_inp.hint_text = "E-mail"
-        self.ids.aka.email_inp.bind(focus = self.on_my_focus)
+        self.ids.aka.email_inp.bind(focus = self.on_focus_email)
+        self.ids.aka.email_inp.text = 'ceidas22@gmail.com'
         #gia password inp
         self.ids.aka.passw_inp.hint_text = "Password"
-        self.ids.aka.passw_inp.bind(focus = self.on_my_focus)
-        self.ids.aka.login_bttn.bind(on_press = self.to_main_screen)#8a prepei na stelnw ke coordinates
+        self.ids.aka.passw_inp.bind(focus = self.on_focus_password)
+        self.ids.aka.passw_inp.text = 'Ceid2022!!'
+        self.ids.aka.login_bttn.bind(on_press = self.send_info)#8a prepei na stelnw ke coordinates
+        self.ids.aka.reg_bttn.bind(on_press = self.send_info_reg)#8a prepei na stelnw ke coordinates
         self.ids.aka.login_bttn.disabled = True#sthn arxh disabled
         self.ids.aka.reg_bttn.disabled = True#sthn arxh disabled
 
-    def on_my_focus(self,instance,focus,**kwargs):
+    def on_focus_username(self,instance,focus,**kwargs):
+        if focus :
+            pass
+        else:
+            self.check_restrictions()
+
+    def on_focus_email(self,instance,focus,**kwargs):
+        if focus :
+            pass
+        else:
+            self.check_restrictions()
+
+    def on_focus_password(self,instance,focus,**kwargs):
         if focus :
             pass
         else:
@@ -474,11 +504,54 @@ class First_Screen(Screen):
             self.ids.aka.login_bttn.disabled = True
             self.ids.aka.reg_bttn.disabled = True
 
-    def to_main_screen(self,obj,**kwargs):
-        msc = Second_Screen(name = 'second_light',usr = User(self.ids.aka.us_inp.text,self.ids.aka.email_inp.text))
-        self.manager.add_widget(msc)
-        self.manager.current = 'second_light'
-        return self.manager
+    def send_info(self,obj,**kwargs):
+        mdict = {
+            "msg" : {
+                "username":str(self.ids.aka.us_inp.text),
+                "password":str(self.ids.aka.email_inp.text),
+                "email":str(self.ids.aka.passw_inp.text),
+                "coords" : {
+                    "lat" : 38.247344,
+                    "lon" : 21.733015
+                }
+            }
+        }
+        mc = myConnection(mdict,'login')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        if int(res["info"])==1:
+            msc = Second_Screen(name = 'second_light', usr = User(res["msg"]["username"], res["msg"]["email"],mdict["msg"]["coords"],res["msg"]["points"],id = res["msg"]["id"],num_of_friends = res["count"][0]["count(*)"]))
+            self.manager.add_widget(msc)
+            self.manager.current = 'second_light'
+            return self.manager
+        else:
+            #8elw pop up
+            popup = Popup(title='Error',content=Label(text=res["msg"]),size_hint=(None, None), size=(235,135))
+            popup.open()
+
+    def send_info_reg(self,obj,**kwargs):
+        mdict = {
+            "msg" : {
+                "username":str(self.ids.aka.us_inp.text),
+                "password":str(self.ids.aka.email_inp.text),
+                "email":str(self.ids.aka.passw_inp.text),
+                "coords" : {
+                    "lat" : 0,
+                    "lon" : 0
+                }
+            }
+        }
+        mc = myConnection(mdict,'register')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        if res["info"] == '1':
+            #8elw pop up
+            popup = Popup(title='Test popup',content=Label(text="Registered Succesfully!"),size_hint=(None, None), size=(250,145))
+            popup.open()
+        else :
+            #8elw pop up
+            popup = Popup(title='Test popup',content=Label(text=res["info"]),size_hint=(None, None), size=(250,145))
+            popup.open()
 
 class Main_App(App):
 
