@@ -311,6 +311,20 @@ def double_number_function(last):
             arr.append('0'+str(k))
     return arr
 #
+#Gia tous filous
+#
+#to main content && ScrollView gia friends
+class FriendsLayout(BoxLayout):
+    pass
+#to main content && ScrollView gia friends
+#to main content gia Friends
+class Friends_Layout(BoxLayout):
+    pass
+#to main content gia Friends
+#
+#Gia tous filous
+#
+#
 #to profile tou xrhsth
 #
 class Profile_Layout(BoxLayout):
@@ -351,6 +365,63 @@ class Event_Creation_Layout(BoxLayout):
         del(x)
         self.ids.info_layout.event_datetimes_2.ids.spinner_hour.values = double_number_function(24)
         self.ids.info_layout.event_datetimes_2.ids.spinner_minute.values = double_number_function(60)
+
+    def check_restrictions(self):
+        try:
+            int(self.ids.info_layout.points_loose.text)
+            int(self.ids.info_layout.points_earned.text)
+            int(self.ids.info_layout.capacity.text)
+            #gia diarkeia ti kanw?
+            #edw 8elw popup ke 8a to gurnaw se None, auto an den exoun mpei swsta ta datetimes
+            if len(self.ids.info_layout.name.text) > 4 and len(self.ids.info_layout.location.text) > 4:
+                self.ids.info_layout.subutton.disabled = False
+            elif self._creator.get_points() < int(self.ids.info_layout.points_loose.text):
+                popup = Popup(title='Error',content=Label(text ='You don\'t have enough points.'),size_hint=(None, None), size=(275,125))
+                popup.open()
+            else:
+                self.ids.info_layout.subutton.disabled = True
+        except ValueError:
+            self.ids.info_layout.subutton.disabled = True
+
+    def check_date_restrictions(self,obj,**kwargs):
+        #gia spinners
+        dt_value_1 = self.ids.info_layout.event_datetimes_1.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_1.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_1.ids.spinner_minute.text
+        dt_value_2 = self.ids.info_layout.event_datetimes_2.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_2.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_2.ids.spinner_minute.text
+        try :
+            self._to_start_end[self.ids.info_layout.event_datetimes_1.ids.se_label.text] = str(dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M'))
+            self._to_start_end[self.ids.info_layout.event_datetimes_2.ids.se_label.text] = str(dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M'))
+            if dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M') < dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M'):#8elw ke duration
+                self.to_submit()
+            else:
+                popup = Popup(title='Error',content=Label(text ='The event duration is little.'),size_hint=(None, None), size=(275,125))
+                popup.open()
+        except ValueError:
+            popup = Popup(title='Error',content=Label(text ='No values for starting or ending dates .'),size_hint=(None, None), size=(275,125))
+            popup.open()
+
+    def my_on_focus(self,instance,focus,**kwargs):
+        if focus :
+            pass
+        else:
+            self.check_restrictions()
+
+    #8a paizei ena pop up pou 8a enhmerwnei gia to ti paizei me podous ke capacity
+    def to_submit(self):
+        if int(self.ids.info_layout.points_loose.text)/int(self.ids.info_layout.capacity.text) >= 100 and int(self.ids.info_layout.points_earned.text)/int(self.ids.info_layout.capacity.text) >= 500 :
+            popup = Popup(title='Constraints are satisfied.',content=Label(text = 'Continue'),size_hint=(None, None), size=(275,125))
+            popup.open()
+        else:
+            sub_layout = SubmitLayout()
+            popup = Popup(title='Constraints are not satisfied.',content=sub_layout,size_hint=(None, None), size=(275,125),auto_dismiss=False)
+            popup.content.ids.save.text = 'Modify'
+            popup.content.ids.save.bind(on_press = self.modify_points)
+            popup.content.ids.dismiss.bind(on_press = popup.dismiss)
+            popup.open()
+
+    def modify_points(self,instance,**kwargs):
+        self.ids.info_layout.points_loose.text = str(int(self.ids.info_layout.capacity.text) * 100)
+        self.ids.info_layout.points_earned.text = str(int(self.ids.info_layout.capacity.text) * 500)
+
 
 #ta spinner mou
 class SpinnerLayout(GridLayout):
