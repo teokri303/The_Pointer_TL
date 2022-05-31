@@ -4,6 +4,8 @@
 class Event:
     #event info
     _id = 0
+    _lon = 0.00
+    _lat = 0.00
     _name = ""
     _points_g = 0
     _points_r = 0
@@ -15,10 +17,12 @@ class Event:
     _creator = None
     _participate = []
 
-    def __init__(self,id = 0,name = "",points_g = 0,points_r = 0,cap = 0,prv = False,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
+    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_g = 0,points_r = 0,cap = 0,prv = False,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
         #event info
         self._id = id
         self._name = name
+        self._lat = lat
+        self._lon = lon
         self._points_g = points_g
         self._points_r = points_r
         self._cap = cap
@@ -37,14 +41,10 @@ class Event:
         self.points_r = points_r
     def set_cap(self,cap = 0):
         self._cap = cap
-    def set_counter(self,counter):
-        self._counter = counter
     def set_points_r(self,points_r):
         self._points_r = points_r
     def set_points_g(self,points_g):
         self._points_g = points_g
-    def set_prv(self, prv = False):
-        self._prv = prv
     #user info
     def set_creator(self,creator = None):
         self._creator = creator
@@ -65,12 +65,8 @@ class Event:
         return self._name
     def get_points(self):
         return (self._points_g,self._points_r)
-    def get_location(self):
-        return self._location
     def get_cap(self):
         return self._cap
-    def get_counter(self):
-        return self._counter
     def get_points_r(self):
         return self._points_r
     def get_points_g(self):
