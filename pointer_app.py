@@ -161,14 +161,13 @@ class Event_Creation_Layout(BoxLayout):
 
     def check_restrictions(self):
         try:
-            int(self.ids.info_layout.points_loose.text)
             int(self.ids.info_layout.points_earned.text)
             int(self.ids.info_layout.capacity.text)
             #gia diarkeia ti kanw?
             #edw 8elw popup ke 8a to gurnaw se None, auto an den exoun mpei swsta ta datetimes
-            if len(self.ids.info_layout.name.text) > 4 and len(self.ids.info_layout.location.text) > 4:
+            if len(self.ids.info_layout.name.text) > 4:
                 self.ids.info_layout.subutton.disabled = False
-            elif self._creator.get_points() < int(self.ids.info_layout.points_loose.text):
+            elif self._creator.get_points() < int(self.ids.info_layout.points_earned.text):
                 popup = Popup(title='Error',content=Label(text ='You don\'t have enough points.'),size_hint=(None, None), size=(275,125))
                 popup.open()
             else:
@@ -261,6 +260,58 @@ class Second_Screen(Screen):
             self.create_event(None)
         #to allo arxikopoieitai
         self.ids.aka.info_layout.map_opp.options_layout.text = 'Control Buttons'
+
+    #meta thn epituxh dhmiourgia location --> to map?
+    def to_map_after_name(self,e):
+        self.to_map(None)
+        self._temp_event = e#auto 8a allaksei ?
+        #kanw disable ola
+        self.disable_all()
+        #gia na ftiaksw locations
+        self.ids.aka.info_layout.children[0].bind(on_touch_down=self.map_double_tap)
+        #vazw ena submit button katw aristera
+        b = Button(text = "Create",size_hint_x = .15 , size_hint_y = .05 ,pos_hint= {'x' : .095 , 'y' : .05})
+        b.bind(on_press = self.save_event)
+        self.ids.aka.add_widget(b)
+        return self.manager
+
+    def save_event(self,instance,**kwargs):
+        #dhmiourgia Location , ta constraints ta tirhses prin
+        #me ena pop_up , 8a ftiaksw ena submitLayout
+        sub_layout = SubmitLayout()
+        popup = Popup(title='Are you sure you want to create this Event ?',content=sub_layout,size_hint=(None, None), size=(275,125),auto_dismiss=False)
+        popup.content.ids.save.bind(on_press = self.send_event)
+        popup.content.ids.save.bind(on_release = popup.dismiss)
+        popup.content.ids.dismiss.bind(on_press = popup.dismiss)
+        popup.open()
+
+    def send_event(self,instance , **kwargs):
+        self.enable_all()
+        mdict = self._temp_event.DictInfo()
+        mc = myConnection(mdict, 'event_creation')
+        res = mc.send_dict()
+        self.ids.aka.remove_widget(self.ids.aka.children[0])
+        self.to_map(None)
+    #gia double tap se map
+    def map_double_tap(self, instance,touch):
+        if touch.is_double_tap:
+            #pairnw suntetagmenes analoga me click
+            a = self.ids.aka.info_layout.children[0].get_latlon_at(x=touch.pos[0],y=touch.pos[1])
+            #allazw pragmata gia location
+            self._temp_location.set_coord(lat = a.lat,lon = a.lon)
+            #loipon, 8a mpei h kanonikh klash mazi me location
+            mmarker = myMarkerPopUp(lon=a.lon,lat=a.lat,loc = self._temp_event,to_layout = MyBoxL(), some_text = self._temp_event.toString(),source="1mmarker.png")
+            mmarker.bind(on_press = self.remove_lmarker)
+            self.ids.aka.info_layout.children[0].add_marker(mmarker)
+            #mia fora 8a ftiakseis Location
+            self.ids.aka.info_layout.children[0].unbind(on_touch_down=self.map_double_tap)
+            #8a vgalw pop up
+            #xreiazomai xroniko delay gia ta double taps ? 
+
+    def remove_lmarker(self,instance , **kwargs):
+        self.ids.aka.info_layout.children[0].remove_widget(instance)
+        #gia na ftiaksw locations
+        self.ids.aka.info_layout.children[0].bind(on_touch_down=self.map_double_tap)
     #gia na phgainw se map
     def to_map(self,instance,**kwargs):
         self.manager.current = 'second_light'
@@ -384,7 +435,8 @@ class First_Screen(Screen):
         res = mc.send_dict()
         res = json.loads(res.text)
         if int(res["info"])==1:
-            msc = Second_Screen(name = 'second_light', usr = User(res["msg"]["username"], res["msg"]["email"],mdict["msg"]["coords"],res["msg"]["points"],id = res["msg"]["id"],num_of_friends = res["count"][0]["count(*)"]))
+            print(str(res['msg']['lon']))
+            msc = Second_Screen(name = 'second_light', usr = RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"],res["msg"]["lon"],res["msg"]["lat"],res["msg"]["points"],num_of_friends = res["count"][0]["count(*)"]))
             self.manager.add_widget(msc)
             self.manager.current = 'second_light'
             return self.manager

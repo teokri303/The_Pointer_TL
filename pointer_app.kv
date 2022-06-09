@@ -216,7 +216,6 @@
         subutton : subutton
         name : name
         points_earned : points_earned
-        points_loose : points_loose
         privatesw : privatesw
         capacity : capacity
         event_datetimes_1 : event_datetimes_1
@@ -240,11 +239,6 @@
             pos_hint : {'center_x' : .5}
             size_hint : .6, .13
             hint_text : 'Points Earned'
-        Cevent_Labels :
-            id : points_loose
-            pos_hint : {'center_x' : .5}
-            size_hint : .6, .13
-            hint_text : 'Points Loose'
         Cevent_Labels :
             id : capacity
             pos_hint : {'center_x' : .5}
@@ -301,13 +295,15 @@
 
 <Second_Screen@Screen>
     aka : aka
-    BoxLayout:
+    FloatLayout:
         id : aka
         info_layout : info_layout
         orientation : 'horizontal'
+        size_hint : (root.size_hint_x, root.size_hint_y)
+        #xrwmata
         canvas.before:
             Color:
-                rgba: .975 , .485 , .255 , .85
+                rgba: .005 , .1 , .4 , .85
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -315,9 +311,11 @@
             id : info_layout
             map_opp : map_opp
             orientation: 'vertical'
+            size_hint : (root.size_hint_x, root.size_hint_y)
+
             canvas.before:
                 Color:
-                    rgba: .975 , .485 , .255 , .85
+                    rgba: .005 , .1 , .4 , .85
                 Rectangle:
                     pos: self.pos
                     size: self.size
