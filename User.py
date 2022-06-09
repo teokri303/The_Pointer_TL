@@ -2,14 +2,16 @@ class User:
     #user info
     _id = None
     _username = None
+    _password = None
     _email = None
     _lon = None
     _lat = None
 
-    def __init__(self,id = None,username = "",email = "", lon = 0.00,lat = 0.00):
+    def __init__(self,id = None,username = "",email = "",password = None, lon = 0.00,lat = 0.00):
         self._id = id
         self._username = username
         self._email = email
+        self._password = password
         self._lon = lon
         self._lat = lat
     #user info
@@ -33,6 +35,8 @@ class User:
         return self._username
     def get_email(self):
         return self._email
+    def get_password(self):
+        return self._password
 
 class RegularUser(User):
     _online = None
@@ -41,16 +45,18 @@ class RegularUser(User):
     _num_of_friends = 0
     _at_event = False
     _finished_events = 0
+    _penalty = 0
 
-    def __init__(self,id = None,username = "",email = "", lon = 0.00,lat = 0.00,points = 0,pcoins = 0,online = 0,num_of_friends=0,finished_events = 0):
+    def __init__(self,id = None,username = "",email = "", lon = 0.00,lat = 0.00,points = 0,pcoins = 0,online = 0,num_of_friends=0,finished_events = 0,penalty = 0,at_event = False):
         #user info
-        super(User,self).__init__(id,username,email,lon,lat)
+        super(User,self).__init__()
         self._online = online
         self._points = points
         self._pcoins = pcoins
         self._num_of_friends = num_of_friends
         self._finished_events = finished_events
-    #
+        self._penalty = penalty
+        self._at_event = at_event
     #setter
     #
     def set_points(self, points):
@@ -66,6 +72,8 @@ class RegularUser(User):
             self._at_event = True
         else:
             self._at_event = False
+    def set_penalty(self,penalty):
+        self._penalty = penalty
 
     def get_points(self):
         return self._points
@@ -96,6 +104,11 @@ class RegularUser(User):
         self._points+=sum
     def pcoin_sum(self,p):
         self._pcoins += p
+    def increment_penalty(self):
+        self._penalty +=1
+        if self._penalty > 3:
+            return True
+        return False
 
     def DictInfo(self):
         mdict = {
@@ -110,3 +123,7 @@ class RegularUser(User):
 
     def StringInfo(self):
         return 'Username : ' + self._username + '\nFriends : ' + str(self._num_of_friends) + '\nState : ' + self.get_online_string() + '\n'+self.get_at_event()
+
+
+class ProfessionalUser(User):
+    pass
