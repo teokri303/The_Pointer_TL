@@ -57,6 +57,11 @@ class Control_Buttons(Spinner):
 #to dropdown
 class Create_Buttons(Spinner):
     pass
+#kapoia koutia gia kaluterh emfanish
+class MyBox(BoxLayout):
+    pass
+class MyBoxL(BoxLayout):
+    pass
 #to main content gia FriendRequests
 class FriendRequest_Layout(BoxLayout):
     _friendrequest = None
@@ -117,6 +122,21 @@ class Friends_Layout(BoxLayout):
 #
 #Gia tous filous
 #
+#pop up event
+class myMarkerPopUp(MapMarkerPopup):
+    _ev = None
+
+    def __init__(self,some_text,to_layout, ev = None,**kwargs):
+        super(myMarkerPopUp,self).__init__(**kwargs)
+        to_layout.add_widget(Label(text = some_text,size = (100,50)))
+        if isinstance(to_layout, MyBoxL):
+            #edw mpainei koumpi gia location
+            self._ev = ev
+            b = Button(text="More Info",size_hint=(.85,.35),pos_hint={'center_x' : 0.5,'center_y':0.25})
+            to_layout.add_widget(b)
+        self.add_widget(to_layout)
+
+#pop up event
 #
 #to profile tou xrhsth
 #
@@ -132,30 +152,53 @@ class Profile_Layout(BoxLayout):
         self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)
 
 class Event_Creation_Layout(BoxLayout):
+    _to_map = None
+    _user = None
 
-    def __init__(self,**kwargs):
+    def __init__(self,user = None,to_map = None,**kwargs):
         super(Event_Creation_Layout, self).__init__(**kwargs)
+        self._user = user
+        self._to_map = to_map
         self.start_spinners()
         self.ids.info_layout.event_datetimes_1.ids.se_label.text = "Start"
         self.ids.info_layout.event_datetimes_2.ids.se_label.text = "End"
+        self.ids.info_layout.subutton.bind(on_press = self.to_map)
+
+    def to_map(self,instance,**kwargs):
+        dt_value_1 = self.ids.info_layout.event_datetimes_1.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_1.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_1.ids.spinner_minute.text
+        dt_value_2 = self.ids.info_layout.event_datetimes_2.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_2.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_2.ids.spinner_minute.text
+
+        self._to_map(e = Event(name = str(self.ids.info_layout.name.text), points_g = int(self.ids.info_layout.points_earned.text),cap = int(self.ids.info_layout.capacity.text),creator = self._user,starts = dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M'),ends = dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M')))
 
     def start_spinners(self):
         #prepei na pairnoun times
         #gia spinners 1
         self.ids.info_layout.event_datetimes_1.ids.spinner_year.values = [str(dt.datetime.today().year) , str(dt.datetime.today().year + 1)]
+        self.ids.info_layout.event_datetimes_1.ids.spinner_year.text = str(dt.datetime.today().year)
+
         self.ids.info_layout.event_datetimes_1.ids.spinner_month.values = list(clnd.month_name[1:])
+        self.ids.info_layout.event_datetimes_1.ids.spinner_month.text = str(clnd.month_name[dt.datetime.today().month])
+
         x = double_number_function(30)
         self.ids.info_layout.event_datetimes_1.ids.spinner_day.values = x[1:]
+        self.ids.info_layout.event_datetimes_1.ids.spinner_day.text = str(x[dt.datetime.today().day])
         del(x)
+
         self.ids.info_layout.event_datetimes_1.ids.spinner_hour.values = double_number_function(24)
         self.ids.info_layout.event_datetimes_1.ids.spinner_minute.values = double_number_function(60)
 
         #gia spinners 2
         self.ids.info_layout.event_datetimes_2.ids.spinner_year.values = [str(dt.datetime.today().year) , str(dt.datetime.today().year + 1)]
+        self.ids.info_layout.event_datetimes_2.ids.spinner_year.text = str(dt.datetime.today().year)
+
         self.ids.info_layout.event_datetimes_2.ids.spinner_month.values = list(clnd.month_name[1:])
+        self.ids.info_layout.event_datetimes_2.ids.spinner_month.text = str(clnd.month_name[dt.datetime.today().month])
+
         x = double_number_function(30)
         self.ids.info_layout.event_datetimes_2.ids.spinner_day.values = x[1:]
+        self.ids.info_layout.event_datetimes_2.ids.spinner_day.text = str(x[dt.datetime.today().day])
         del(x)
+
         self.ids.info_layout.event_datetimes_2.ids.spinner_hour.values = double_number_function(24)
         self.ids.info_layout.event_datetimes_2.ids.spinner_minute.values = double_number_function(60)
 
@@ -180,8 +223,7 @@ class Event_Creation_Layout(BoxLayout):
         dt_value_1 = self.ids.info_layout.event_datetimes_1.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_1.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_1.ids.spinner_minute.text
         dt_value_2 = self.ids.info_layout.event_datetimes_2.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_2.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_2.ids.spinner_minute.text
         try :
-            self._to_start_end[self.ids.info_layout.event_datetimes_1.ids.se_label.text] = str(dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M'))
-            self._to_start_end[self.ids.info_layout.event_datetimes_2.ids.se_label.text] = str(dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M'))
+
             if dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M') < dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M'):#8elw ke duration
                 self.to_submit()
             else:
@@ -214,13 +256,16 @@ class Event_Creation_Layout(BoxLayout):
         self.ids.info_layout.points_loose.text = str(int(self.ids.info_layout.capacity.text) * 100)
         self.ids.info_layout.points_earned.text = str(int(self.ids.info_layout.capacity.text) * 500)
 
-
+#tosubmitLayout
+class SubmitLayout(BoxLayout):
+    pass
 #ta spinner mou
 class SpinnerLayout(GridLayout):
     pass
 #to main screen
 class Second_Screen(Screen):
     _user = None
+    _temp_event = None
 
     def __init__(self,usr ,**kwargs):
         super(Second_Screen, self).__init__(**kwargs)
@@ -266,9 +311,9 @@ class Second_Screen(Screen):
         self.to_map(None)
         self._temp_event = e#auto 8a allaksei ?
         #kanw disable ola
-        self.disable_all()
+        #self.disable_all()
         #gia na ftiaksw locations
-        self.ids.aka.info_layout.children[0].bind(on_touch_down=self.map_double_tap)
+        self.ids.aka.info_layout.children[0].bind(on_touch_up=self.map_double_tap)
         #vazw ena submit button katw aristera
         b = Button(text = "Create",size_hint_x = .15 , size_hint_y = .05 ,pos_hint= {'x' : .095 , 'y' : .05})
         b.bind(on_press = self.save_event)
@@ -298,15 +343,15 @@ class Second_Screen(Screen):
             #pairnw suntetagmenes analoga me click
             a = self.ids.aka.info_layout.children[0].get_latlon_at(x=touch.pos[0],y=touch.pos[1])
             #allazw pragmata gia location
-            self._temp_location.set_coord(lat = a.lat,lon = a.lon)
+            self._temp_event.set_coord(lat = a.lat,lon = a.lon)
             #loipon, 8a mpei h kanonikh klash mazi me location
-            mmarker = myMarkerPopUp(lon=a.lon,lat=a.lat,loc = self._temp_event,to_layout = MyBoxL(), some_text = self._temp_event.toString(),source="1mmarker.png")
+            mmarker = myMarkerPopUp(lon=a.lon,lat=a.lat,ev = self._temp_event,to_layout = MyBoxL(), some_text = self._temp_event.toString(),source="1mmarker.png")
             mmarker.bind(on_press = self.remove_lmarker)
             self.ids.aka.info_layout.children[0].add_marker(mmarker)
             #mia fora 8a ftiakseis Location
             self.ids.aka.info_layout.children[0].unbind(on_touch_down=self.map_double_tap)
             #8a vgalw pop up
-            #xreiazomai xroniko delay gia ta double taps ? 
+            #xreiazomai xroniko delay gia ta double taps ?
 
     def remove_lmarker(self,instance , **kwargs):
         self.ids.aka.info_layout.children[0].remove_widget(instance)
@@ -333,7 +378,7 @@ class Second_Screen(Screen):
         #vgazw to map
         self.manager.children[0].ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
         #vazw to profile
-        p = Event_Creation_Layout()
+        p = Event_Creation_Layout(user = self._user,to_map = self.to_map_after_name)
         self.manager.children[0].ids.aka.info_layout.add_widget(p)
 
         return self.manager

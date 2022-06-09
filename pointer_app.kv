@@ -1,3 +1,37 @@
+#anaferetai se users
+<MyBox@BoxLayout>:
+    orientation : 'vertical'
+    size_hint : None,None
+    size : 110,75
+    canvas.before :
+        Color :
+            rgba : .055,.25,.45,.777
+        Ellipse:
+            segments : 150
+            size: 110,75
+#anaferetai se locations
+<MyBoxL@BoxLayout>:
+    orientation : 'vertical'
+    size_hint : None,None
+    size : 175,120
+    canvas.before :
+        Color :
+            rgba : .055,.25,.45,.777
+        RoundedRectangle:
+            size: 175,120
+
+#ena layout gia to pop up otan ftiaxnw location
+<SubmitLayout@BoxLayout>:
+    orientation : 'vertical'
+    save : save
+    dismiss : dismiss
+    Button :
+        id : save
+        text : 'Save'
+    Button :
+        id : dismiss
+        text : 'Dismiss'
+
 #oi filoi mesa se layout
 <FriendsLayout@BoxLayout>:
     search4friends : search4friends
