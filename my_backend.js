@@ -44,12 +44,11 @@ app.all('/event_creation',async function (req, res) {
       req.on("end",async () => {
         var mdata = Buffer.concat(body).toString();
         mdata = JSON.parse(mdata);//parsing json
-        mdata = mdata.msg;
         var con = mysql.createConnection({
           host: "localhost",
           user: "root",
           password: "Den8aKsexasw",
-          database: "mapp",
+          database: "softeng22",
           multipleStatements: true
         });
         con.connect(async function(err) {
@@ -66,8 +65,7 @@ app.all('/event_creation',async function (req, res) {
               res.write(JSON.stringify(message));
               res.end();
             }else{
-
-              var mquery = "INSERT INTO event(name,lon,lat,cap,starts,ends,points_r,private,creator_name,creator_email,creator_id) VALUES (\'"+mdata.name+"\' ,\'"+mdata.lon+"\',"+ mdata.lat+","+mdata.cap+","+mdata.starts+",\'"+ mdata.ends+"\',\'"+mdata.points_r+"\',\'"+mdata.private+"\',\'"+mdata.creator_name+"\',\'"+mdata.creator_email+"\',\'"+mdata.creator_id+"\');";
+              var mquery = "INSERT INTO event(name,lon,lat,cap,starts,ends,points_r,private,creator_name,creator_email,creator_id) VALUES (\'"+mdata.name+"\' ,"+mdata.lon+","+ mdata.lat+","+mdata.cap+",\'"+mdata.starts+"\',\'"+ mdata.ends+"\',"+mdata.points_r+","+mdata.private+",\'"+mdata.creator_name+"\',\'"+mdata.creator_email+"\',\'"+mdata.creator_id+"\');";
               result = await query(mquery);
               var mquery = "select id from event where (name like \'"+mdata.name+"\') and (lon = \'"+mdata.lon+"\') and (lat = \'"+mdata.lat+"\') and (creator_id = "+mdata.creator_id+");";
               result = await query(mquery);//edw 8elw na vazw ws summetoxh ton xrhsth

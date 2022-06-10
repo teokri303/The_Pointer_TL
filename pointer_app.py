@@ -275,7 +275,7 @@ class Second_Screen(Screen):
         self._user.set_online(1)
         #prepei na kanw bind tis leitourgies twn koumpiwn
         self.ids.aka.info_layout.map_opp.options_layout.bind(text=self.spinner_selected_value)
-        mmap = MapView(zoom=11, lat=25.55, lon=33.32,map_source=MapSource(min_zoom=3))
+        mmap = MapView(zoom=11, lat=self._user.get_lat(), lon=self._user.get_lon(),map_source=MapSource(min_zoom=3))
         #otan 8elw na ftiaksw event ,tote mporw na create events
         self.ids.aka.info_layout.map_opp.create_buttons.bind(text=self.to_create)
         #8elw na emfanizw me kedro to position mou
@@ -472,9 +472,9 @@ class First_Screen(Screen):
                 "username":str(self.ids.aka.us_inp.text),
                 "password":str(self.ids.aka.email_inp.text),
                 "email":str(self.ids.aka.passw_inp.text),
-                "coords" : {
-                    "lat" : 38.247344,
-                    "lon" : 21.733015
+                "coords" : {#'21.795152907519395',38.29040030442736
+                    "lat" : 38.290400,
+                    "lon" : 21.795153
                 }
             }
         }
@@ -482,8 +482,8 @@ class First_Screen(Screen):
         res = mc.send_dict()
         res = json.loads(res.text)
         if int(res["info"])==1:
-            print(str(RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"]).get_username()))
-            msc = Second_Screen(name = 'second_light', usr = RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"],res["msg"]["lon"],res["msg"]["lat"],res["msg"]["points"],num_of_friends = res["count"][0]["count(*)"]))
+            print(str((res["msg"]["id"],res["msg"]["username"],res["msg"]["email"])))
+            msc = Second_Screen(name = 'second_light', usr = RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"],21.795153,38.290400,res["msg"]["points"],num_of_friends = res["count"][0]["count(*)"]))
             self.manager.add_widget(msc)
             self.manager.current = 'second_light'
             return self.manager
