@@ -19,6 +19,70 @@ var app = express();
 app.set('views', path.join(__dirname, '/'));
 app.set('view engine', 'ejs');
 
+//gia event creation
+app.all('/event_creation',async function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end",async () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        mdata = mdata.msg;
+        var con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "mapp",
+          multipleStatements: true
+        });
+        con.connect(async function(err) {
+          console.log("Connected");
+          console.log(mdata);
+          const query = util.promisify(con.query).bind(con);//g9ia na exw promises
+          var mquery = "SELECT * FROM event WHERE name like \'%"+mdata.name+"%\' AND creator_id = "+mdata.creator_id+" ;"
+          con.query(mquery,async function (err, result, fields) {
+            if (err){
+              throw err;
+            }
+            if(result.length > 0){
+              message = {info : "Event Exists"};
+              res.write(JSON.stringify(message));
+              res.end();
+            }else{
+
+              var mquery = "INSERT INTO event(name,lon,lat,cap,starts,ends,points_r,private,creator_name,creator_email,creator_id) VALUES (\'"+mdata.name+"\' ,\'"+mdata.lon+"\',"+ mdata.lat+","+mdata.cap+","+mdata.starts+",\'"+ mdata.ends+"\',\'"+mdata.points_r+"\',\'"+mdata.private+"\',\'"+mdata.creator_name+"\',\'"+mdata.creator_email+"\',\'"+mdata.creator_id+"\');";
+              result = await query(mquery);
+              var mquery = "select id from event where (name like \'"+mdata.name+"\') and (lon = \'"+mdata.lon+"\') and (lat = \'"+mdata.lat+"\') and (creator_id = "+mdata.creator_id+");";
+              result = await query(mquery);//edw 8elw na vazw ws summetoxh ton xrhsth
+              res.write(JSON.stringify({info : '1',eid : result[0]}));
+              res.end();
+            }
+          });//telos query gia info
+        });//telos connect
+        res.on('error', (err) => {
+          console.error(err);
+        });
+      });//req on end
+    }//end if
+  });
+//event creation
 //vazw pou eimai
 app.all('/login',function (req, res) {
   console.log('Request received: ');
@@ -49,7 +113,7 @@ app.all('/login',function (req, res) {
           host: "localhost",
           user: "root",
           password: "Den8aKsexasw",
-          database: "mapp",
+          database: "softeng22",
           multipleStatements: true
         });
         con.connect(function(err) {
@@ -113,7 +177,7 @@ app.all('/register',function (req, res) {
           host: "localhost",
           user: "root",
           password: "Den8aKsexasw",
-          database: "mapp",
+          database: "softeng22",
           multipleStatements: true
         });
         con.connect(function(err) {
@@ -131,7 +195,7 @@ app.all('/register',function (req, res) {
             }else{
               res.write(JSON.stringify({info : '1'}));
               res.end();
-              var mquery = "INSERT INTO user(username,email,pssw,points) VALUES (\'"+mdata.username+"\' ,\'"+mdata.email+"\',\'"+ mdata.password+"\',30000);";
+              var mquery = "INSERT INTO user(username,email,password,points) VALUES (\'"+mdata.username+"\' ,\'"+mdata.email+"\',\'"+ mdata.password+"\',30000);";
               query(mquery);
             }
           });//telos query gia info

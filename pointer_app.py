@@ -1,4 +1,5 @@
-from User import *
+from User import User
+from User import RegularUser
 from FriendRequest import *
 from Offer import *
 from Code import *
@@ -270,6 +271,7 @@ class Second_Screen(Screen):
     def __init__(self,usr ,**kwargs):
         super(Second_Screen, self).__init__(**kwargs)
         self._user = usr
+        print(str(self._user.DictInfo()))
         self._user.set_online(1)
         #prepei na kanw bind tis leitourgies twn koumpiwn
         self.ids.aka.info_layout.map_opp.options_layout.bind(text=self.spinner_selected_value)
@@ -310,6 +312,7 @@ class Second_Screen(Screen):
     def to_map_after_name(self,e):
         self.to_map(None)
         self._temp_event = e#auto 8a allaksei ?
+        print(str(e.DictInfo()))
         #kanw disable ola
         #self.disable_all()
         #gia na ftiaksw locations
@@ -331,9 +334,8 @@ class Second_Screen(Screen):
         popup.open()
 
     def send_event(self,instance , **kwargs):
-        self.enable_all()
-        mdict = self._temp_event.DictInfo()
-        mc = myConnection(mdict, 'event_creation')
+        print(str(self._temp_event.DictInfo()))
+        mc = myConnection(self._temp_event.DictInfo(), 'event_creation')
         res = mc.send_dict()
         self.ids.aka.remove_widget(self.ids.aka.children[0])
         self.to_map(None)
@@ -480,7 +482,7 @@ class First_Screen(Screen):
         res = mc.send_dict()
         res = json.loads(res.text)
         if int(res["info"])==1:
-            print(str(res['msg']['lon']))
+            print(str(RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"]).get_username()))
             msc = Second_Screen(name = 'second_light', usr = RegularUser(res["msg"]["id"],res["msg"]["username"],res["msg"]["email"],res["msg"]["lon"],res["msg"]["lat"],res["msg"]["points"],num_of_friends = res["count"][0]["count(*)"]))
             self.manager.add_widget(msc)
             self.manager.current = 'second_light'
