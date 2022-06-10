@@ -37,6 +37,10 @@ class User:
         return self._email
     def get_password(self):
         return self._password
+    def get_lon(self):
+        return self._lon
+    def get_lat(self):
+        return self._lat
 
 class RegularUser(User):
     _online = None
@@ -50,6 +54,11 @@ class RegularUser(User):
     def __init__(self,id = None,username = "",email = "", lon = 0.00,lat = 0.00,points = 0,pcoins = 0,online = 0,num_of_friends=0,finished_events = 0,penalty = 0,at_event = False):
         #user info
         super(User,self).__init__()
+        self._username = username
+        self._email = email
+        self._id = id
+        self._lon = lon
+        self._lat = lat
         self._online = online
         self._points = points
         self._pcoins = pcoins

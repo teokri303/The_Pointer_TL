@@ -1,3 +1,5 @@
+import datetime as dt
+
 #
 #Event Class
 #
@@ -17,7 +19,7 @@ class Event:
     _creator = None
     _participate = []
 
-    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_g = 0,points_r = 0,cap = 0,prv = False,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
+    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_g = 0,points_r = 0,cap = 0,prv = 0,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
         #event info
         self._id = id
         self._name = name
@@ -34,6 +36,11 @@ class Event:
         self._participate = participate
 
     #event info
+    def set_coord(self, lat = None,lon = None):
+        if not(lat == None):
+            self._lat = lat
+        if not(lon == None):
+            self._lon = lon
     def set_name(self,name = ""):
         self._name = name
     def points(self,points_g = 0,points_r = 0):
@@ -105,15 +112,17 @@ class Event:
         return {
         "id" : self._id,
         "name" : self._name ,
-        "location" : self._location ,
-        "points_gained" : self._points_g ,
-        "points_required" : self._points_r ,
-        "capacity" : self._cap ,
+        "lon" : self._lon,
+        "lat" : self._lat,
+        "points_r" : self._points_r ,
+        "cap" : self._cap ,
         "private" : self._prv,
         "starts" : str(self._starts ),#paizei na 8elei moda
         "ends" : str(self._ends) ,
         #usr info
-        "creator" : self._creator ,
+        "creator_name" : self._creator.get_username() ,
+        "creator_email" : self._creator.get_email() ,
+        "creator_id" : self._creator.get_id() ,
         "participate" : self._participate, #sigoura 8elei moda
         "participators_num" : self.get_num_users()
         }
