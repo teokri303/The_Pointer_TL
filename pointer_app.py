@@ -63,6 +63,54 @@ class MyBox(BoxLayout):
     pass
 class MyBoxL(BoxLayout):
     pass
+
+class FriendsLayout(BoxLayout):
+    _user = None
+    _search_profile_callback = None
+    def __init__(self,usr,tocallback_profile,to_invite = False,event = None,**kwargs):
+        super(FriendsLayout, self).__init__(**kwargs)
+        #pairnw friend request apo vash
+        self._user = usr#apo auto 8a parw info gia friends
+        mc = myConnection(self._user.user_dict(), 'get_friends')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        #ftiaxnw friend requests apo res
+        fr = friends_creation(res)
+        self.ids.search4friends.search_bar.set_current_user(self._user)
+        #gia search pathma dropdown callback
+        self.ids.search4friends.search_bar.set_profile_callback(tocallback_profile)#8a htan kalo na checkarw ke server?
+        #self.ids.search4friends.subutton.bind(on_press = self.to_user_profile)
+        for i in fr:
+            f = Friends_Layout(i,tocallback_profile,to_invite,event)
+            self.ids.main_content.friends.add_widget(f)
+#to main content && ScrollView gia friends
+#to main content gia Friends
+class Friends_Layout(BoxLayout):
+    _friend = None
+    _to_user_profile = None
+    _to_invite = None
+    _event = None
+    def __init__(self,friend,to_user_profile,to_invite = False,event = None,**kwargs):
+        super(Friends_Layout, self).__init__(**kwargs)
+        self._friend = friend
+        self._to_user_profile = to_user_profile
+        self._to_invite = to_invite
+        self._event = event
+        #ksereis oti prepei na to gemiseis
+        self.ids.user_info.text = self._friend.StringInfo()
+        if to_invite :
+            self.ids.to_profile.text = 'Invite'
+            #kalutera apla na stelnei inv
+            self.ids.to_profile.bind(on_press = self.to_invite_profile)
+        else:
+            self.ids.to_profile.bind(on_press = self.to_user_profile)
+        #8elw callback gia profile
+    def to_user_profile(self,instance,**kwargs):
+        self._to_user_profile(user = self._friend)
+    def to_invite_profile(self,instance,**kwargs):
+        self._to_user_profile(user = self._friend,ev = self._event)
+#to main content gia Friends
+
 #to main content gia FriendRequests
 class FriendRequest_Layout(BoxLayout):
     _friendrequest = None
@@ -256,6 +304,33 @@ class Event_Creation_Layout(BoxLayout):
     def modify_points(self,instance,**kwargs):
         self.ids.info_layout.points_loose.text = str(int(self.ids.info_layout.capacity.text) * 100)
         self.ids.info_layout.points_earned.text = str(int(self.ids.info_layout.capacity.text) * 500)
+
+    def to_friends(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        fr = FriendsLayout(usr = self._user,tocallback_profile = self.to_profile_with_u)
+        self.ids.aka.info_layout.add_widget(fr)
+        self.disable_mapp_opp_buttons()
+        return self.manager
+
+    #paw se profile mazi me user
+    def to_profile_with_u(self,user,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        #proetoimasia tou dict
+        mdict = {"self" : self._user.user_dict(), "user" : user.user_dict()}
+        #prepei na checkarw an o user einai filos h exw steilei friend_request
+        mc = myConnection(mdict,'check_if_friend')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        user.set_at_event(int(res["at_event"]))
+        p = Profile_Layout(user = user,you = self._user,friend = int(res["info"]))
+        #vazw to profile
+        self.ids.aka.info_layout.add_widget(p)
+        
+        return self.manager
 
 #tosubmitLayout
 class SubmitLayout(BoxLayout):
