@@ -19,6 +19,116 @@ var app = express();
 app.set('views', path.join(__dirname, '/'));
 app.set('view engine', 'ejs');
 
+//plh8os friends
+app.all('/get_friends',function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end", () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        console.log(mdata);
+        var con = mysql.createConnection({//sundesh se vash
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "mapp",
+          multipleStatements: true
+        });
+        con.connect(async function(err) {
+          console.log("Connected");
+          const query = util.promisify(con.query).bind(con);//gia na exw promises
+          //den kserw an 8a xreiastei security...
+          // ? var mquery = "SELECT * FROM location WHERE name like \'%"+mdata.name+"%\' AND lat = "+mdata.coords.lat+" AND lon = "+mdata.coords.lon+";"
+          var mquery = "SELECT t2.* FROM (Select * from friend_request WHERE username_1 like \'"+mdata.username+"\'AND state_1=\'accepted\' AND state_2=\'accepted\') as t1 INNER JOIN (select * from user) as t2 ON t2.username=t1.username_2 ;";
+          var info_result = await query(mquery);
+          var c_array = [];
+          for( k in info_result){
+            var mquery = "SELECT count(*) FROM friend_request WHERE username_1 like \'"+info_result[k].username+"\'AND state_1=\'accepted\' AND state_2=\'accepted\';";
+            c_array.push( await query(mquery) );
+          }
+          res.write(JSON.stringify({info : info_result,count : c_array}));
+          res.end();
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//plh8os filwn
+
+//get users with name
+app.all('/simple_search',async function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end",async () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        var con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "softeng22",
+          multipleStatements: true
+        });
+        con.connect(async function(err) {
+          console.log("Connected");
+          //const query = util.promisify(con.query).bind(con);//g9ia na exw promises
+          var mquery = "SELECT * FROM user WHERE username like \'"+mdata.name+"%\';"
+          con.query(mquery,async function (err, result, fields) {
+            if (err){
+              throw err;
+            }
+            message = {info : result};
+            res.write(JSON.stringify(message));
+            res.end();
+          });//telos query gia info
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//get users with name
 //gia event creation
 app.all('/event_creation',async function (req, res) {
   console.log('Request received: ');
