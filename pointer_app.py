@@ -289,15 +289,81 @@ class myMarkerPopUp(MapMarkerPopup):
 #to profile tou xrhsth
 #
 class Profile_Layout(BoxLayout):
-
-    def __init__(self,**kwargs):
+    _current_user = None
+    _event = None
+    _to_map = None
+    def __init__(self,user,you,friend,to_map = None,to_invite = False,ev = None,**kwargs):
         super(Profile_Layout, self).__init__(**kwargs)
-        self.ids.info_layout.online.text = str(self.ids.info_layout.online.text)
-        self.ids.info_layout.username.text = str(self.ids.info_layout.username.text)
-        self.ids.info_layout.points.text = str(self.ids.info_layout.points.text)
+        #vazw ton user
+        self._current_user = user
+        self._to_map = to_map
+        #gia username text input
+        self.ids.info_layout.online.text = str(self.ids.info_layout.online.text) + self._current_user.get_online_string()
+        self.ids.info_layout.username.text = str(self.ids.info_layout.username.text) + self._current_user.get_username()
+        self.ids.info_layout.points.text = str(self.ids.info_layout.points.text) + str(self._current_user.get_points())
         self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)
-        self.ids.info_layout.coordinates.text = str(self.ids.info_layout.coordinates.text)
-        self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)
+        self.ids.info_layout.coordinates.text = str(self.ids.info_layout.coordinates.text) + 'Latitude : ' + str(self._current_user.get_lat() ) + "\n"+' ' * 25+'Longitude : '+ str(self._current_user.get_lon())
+        self.ids.info_layout.friends.text = str(self.ids.info_layout.friends.text)+ ' ' + str(self._current_user.get_num_of_friends())
+        #gia on event
+        self.ids.info_layout.at_event.text = self._current_user.get_at_event()
+
+        #prepei na valw button gia add friend
+        if you == None:
+            pass
+        else:
+            #gia add friend
+            b = Button(text='Add Friend', size_hint_y=0.07)
+            b.bind(on_press = partial(self.send_friend_request, you ,self._current_user))
+            self.add_widget(b)
+
+            if friend==1 :
+                b.disabled = True
+            if to_invite:
+                self._event = ev
+                c = Button(text='Invite at Event', size_hint_y=0.07)
+                c.bind(on_press = partial(self.send_event_invitation, you ,self._current_user))
+                self.add_widget(c)
+            else:
+                self._event = ev
+                c = Button(text='Invite at Event', size_hint_y=0.07)
+                #c.bind(on_press = self.to_event_selection)
+                self.add_widget(c)
+
+    def send_friend_request(self,user1,user2,instance,**kwargs):#APO8HKEUONTAI TA DIPLA GTI EIMAI XAZOS
+        mdict = {
+            "msg" : {
+                "username1":str(user1.get_username()),
+                "username2":str(user2.get_username())
+            }
+        }
+        mc = myConnection(mdict,'send_friend_request')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        if res["info"] == '1':
+            #8a paei next
+            instance.disabled = True
+        else:
+            pass
+            #8a exw message alert
+    # 8a phgainei na vrei se poio event 8a ton proskalesei
+    def send_event_invitation(self,user1,user2,instance,**kwargs):
+        mdict = {
+            "msg" : {
+                "eid" : str(self._event.get_id()),
+                "username1":str(user1.get_username()),
+                "username2":str(user2.get_username())
+            }
+        }
+        mc = myConnection(mdict,'send_event_invitation')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        if res["info"] == '1':
+            #8a paei to_map
+            self._to_map(None)
+        else:
+            #exw message alert
+            popup = Popup(title='Error',content=Label(text='You have already sent \nan invitation to this user !'),size_hint=(None, None), size=(235,135))
+            popup.open()
 
 class Event_Creation_Layout(BoxLayout):
     _to_map = None
