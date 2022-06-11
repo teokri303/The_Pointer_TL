@@ -18,12 +18,15 @@ import re
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.dropdown import DropDown
 
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.uix.image import Image
+
+from kivy.properties import ListProperty, StringProperty
 
 from kivy.uix.popup import Popup
 from kivy.uix.switch import Switch
@@ -122,9 +125,7 @@ class Chooser(TextInput):
         else:
             #stelnw text
             mdict = {
-                "msg" : {
-                    "name":str(self.text)
-                }
+                "name":str(self.text)
             }
 
             mc = myConnection(mdict,'simple_search')
@@ -181,10 +182,11 @@ class FriendsLayout(BoxLayout):
         super(FriendsLayout, self).__init__(**kwargs)
         #pairnw friend request apo vash
         self._user = usr#apo auto 8a parw info gia friends
-        mc = myConnection(self._user.user_dict(), 'get_friends')
+        mc = myConnection(self._user.DictInfo(), 'get_friends')
         res = mc.send_dict()
         res = json.loads(res.text)
         #ftiaxnw friend requests apo res
+
         fr = friends_creation(res)
         self.ids.search4friends.search_bar.set_current_user(self._user)
         #gia search pathma dropdown callback
@@ -402,33 +404,6 @@ class Event_Creation_Layout(BoxLayout):
         self.ids.info_layout.points_loose.text = str(int(self.ids.info_layout.capacity.text) * 100)
         self.ids.info_layout.points_earned.text = str(int(self.ids.info_layout.capacity.text) * 500)
 
-    def to_friends(self,instance,**kwargs):
-        self.manager.current = 'second_light'
-        #vgazw to map
-        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
-        fr = FriendsLayout(usr = self._user,tocallback_profile = self.to_profile_with_u)
-        self.ids.aka.info_layout.add_widget(fr)
-        self.disable_mapp_opp_buttons()
-        return self.manager
-
-    #paw se profile mazi me user
-    def to_profile_with_u(self,user,**kwargs):
-        self.manager.current = 'second_light'
-        #vgazw to map
-        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
-        #proetoimasia tou dict
-        mdict = {"self" : self._user.user_dict(), "user" : user.user_dict()}
-        #prepei na checkarw an o user einai filos h exw steilei friend_request
-        mc = myConnection(mdict,'check_if_friend')
-        res = mc.send_dict()
-        res = json.loads(res.text)
-        user.set_at_event(int(res["at_event"]))
-        p = Profile_Layout(user = user,you = self._user,friend = int(res["info"]))
-        #vazw to profile
-        self.ids.aka.info_layout.add_widget(p)
-
-        return self.manager
-
 #tosubmitLayout
 class SubmitLayout(BoxLayout):
     pass
@@ -563,6 +538,33 @@ class Second_Screen(Screen):
         self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
         #vazw to profile
         p = Profile_Layout()
+        self.ids.aka.info_layout.add_widget(p)
+
+        return self.manager
+    def to_friends(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        fr = FriendsLayout(usr = self._user,tocallback_profile = self.to_profile_with_u)
+        self.ids.aka.info_layout.add_widget(fr)
+
+        return self.manager
+
+    #paw se profile mazi me user
+    def to_profile_with_u(self,user,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        #proetoimasia tou dict
+        mdict = {"self" : self._user.DictInfo(), "user" : user.DictInfo()}
+        #prepei na checkarw an o user einai filos h exw steilei friend_request
+        print(str(mdict))
+        mc = myConnection(mdict,'check_if_friend')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        user.set_at_event(int(res["at_event"]))
+        p = Profile_Layout(user = user,you = self._user,friend = int(res["info"]))
+        #vazw to profile
         self.ids.aka.info_layout.add_widget(p)
 
         return self.manager
@@ -701,16 +703,23 @@ class Main_App(App):
 
 Builder.load_file('pointer_app.kv')
 
-if __name__ == "__main__":
-    Main_App().run()
-
 
 def from_Dict_to_User(mdict,current_user,use = 0,frnum=0):#apey8eias opws to stelnei h vash
     if use == 0:
-        u =  User(mdict["username"], mdict["email"],{'lat' : mdict["lat"], 'lon' : mdict["lon"]},mdict["points"])
+        #8elei allagh
+        u =  RegularUser(id = mdict["id"],username = mdict["username"],email = mdict["email"],lon = mdict['lat'], lat = mdict["lat"],points = mdict["points"],pcoins = mdict["pcoins"],online = mdict["online"]["data"])
         if u.get_username() == current_user.get_username():
             return None
         else:
             return u
-    else:
-        return User(mdict["username"], mdict["email"],{'lat' : mdict["lat"], 'lon' : mdict["lon"]},mdict["points"],online = mdict["online"]["data"],num_of_friends=frnum[0]["count(*)"])
+    else:#hmmm...
+        return RegularUser(id = mdict["id"],username = mdict["username"],email = mdict["email"],lon = mdict['lat'], lat = mdict["lat"],points = mdict["points"],pcoins = mdict["pcoins"],online = mdict["online"]["data"],num_of_friends=frnum[0]["count(*)"])
+
+def friends_creation(mdict):
+    friends = []
+    for i in mdict["info"]:
+        friends.append( from_Dict_to_User(mdict = i,current_user = None,use = 1,frnum = mdict["count"].pop(0)) )
+    return friends
+
+if __name__ == "__main__":
+    Main_App().run()
