@@ -333,7 +333,9 @@ class Profile_Layout(BoxLayout):
         mdict = {
             "msg" : {
                 "username1":str(user1.get_username()),
-                "username2":str(user2.get_username())
+                "id1" : str(user1.get_id()),
+                "username2":str(user2.get_username()),
+                "id2" : str(user2.get_id())
             }
         }
         mc = myConnection(mdict,'send_friend_request')

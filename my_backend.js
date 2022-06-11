@@ -49,7 +49,7 @@ app.all('/get_friends',function (req, res) {
           host: "localhost",
           user: "root",
           password: "Den8aKsexasw",
-          database: "mapp",
+          database: "softeng22",
           multipleStatements: true
         });
         con.connect(async function(err) {
@@ -76,6 +76,61 @@ app.all('/get_friends',function (req, res) {
 });
 //plh8os filwn
 
+//gia friend request
+app.all('/send_friend_request',function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end", () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        mdata = mdata.msg;                                  //prosexe to ligo ayto...
+        var con = mysql.createConnection({//sundesh se vash
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "softeng22",
+          multipleStatements: true
+        });
+        con.connect(function(err) {
+          console.log("Connected");
+          const query = util.promisify(con.query).bind(con);//gia na exw promises
+          //den kserw an 8a xreiastei security...
+          // ? var mquery = "SELECT * FROM location WHERE name like \'%"+mdata.name+"%\' AND lat = "+mdata.coords.lat+" AND lon = "+mdata.coords.lon+";"
+          var mquery = "INSERT INTO friend_request(id_1,id_2,username_1,username_2,state_1,state_2) VALUES ("+mdata.id1+","+mdata.id2+",\'"+mdata.username1+"\' ,\'"+mdata.username2+"\',\'accepted\',\'pending\'),("+mdata.id2+","+mdata.id1+",\'"+mdata.username2+"\' ,\'"+mdata.username1+"\',\'pending\',\'accepted\');";
+          con.query(mquery, function (err, result, fields) {
+            if (err){
+              throw err;
+            }
+            res.write(JSON.stringify({info : '1'}));
+            res.end();
+          });//telos query gia info
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//send friend request
 //Check if Friend or Friend_Request
 app.all('/check_if_friend',function (req, res) {
   console.log('Request received: ');
@@ -106,7 +161,7 @@ app.all('/check_if_friend',function (req, res) {
           host: "localhost",
           user: "root",
           password: "Den8aKsexasw",
-          database: "mapp",
+          database: "softeng22",
           multipleStatements: true
         });
         con.connect(async function(err) {
