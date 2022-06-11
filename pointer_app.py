@@ -64,6 +64,116 @@ class MyBox(BoxLayout):
 class MyBoxL(BoxLayout):
     pass
 
+class ChoiceButton(Button):
+    #krataei ena number
+    _num = 0
+    def __init__(self,num ,**kwargs):
+        super(ChoiceButton, self).__init__(**kwargs)
+        self._num = num
+    def get_num(self):
+        return self._num
+
+class Chooser(TextInput):
+    _for_location = False
+    _current_user = None
+    _profile_callback = None
+    choicesfile = StringProperty()
+    choiceslist = ListProperty([])
+
+    def __init__(self, **kwargs):
+        self.choicesfile = kwargs.pop('choicesfile', '')  # each line of file is one possible choice
+        self.choiceslist = kwargs.pop('choiceslist', [])  # list of choices
+        super(Chooser, self).__init__(**kwargs)
+        self.multiline = False
+        self.halign = 'left'
+        self.bind(choicesfile=self.load_choices)
+        self.bind(text=self.on_text)
+        self.load_choices()
+        self.dropdown = None
+
+    def open_dropdown(self, *args):
+        if self.dropdown:
+            self.dropdown.open(self)
+    #edw ta ypopshfia names
+    def load_choices(self):
+        if self.choicesfile:
+            with open(self.choicesfile) as fd:
+                for line in fd:
+                    self.choiceslist.append(line.strip('\n'))
+        self.values = []
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        if self.suggestion_text and keycode[0] == ord('\r'):  # enter selects current suggestion
+            self.suggestion_text = ' '  # setting suggestion_text to '' screws everything
+            self.text = self.values[0]
+            if self.dropdown:
+                self.dropdown.dismiss()
+                self.dropdown = None
+        else:
+            super(Chooser, self).keyboard_on_key_down(window, keycode, text, modifiers)
+
+    def on_text(self, chooser, text):
+        if self.dropdown:
+            self.dropdown.dismiss()
+            self.dropdown = None
+        if text == '':
+            return
+        #edw pairnw ypopshfia onomata
+        else:
+            #stelnw text
+            mdict = {
+                "msg" : {
+                    "name":str(self.text)
+                }
+            }
+
+            mc = myConnection(mdict,'simple_search')
+            res = mc.send_dict()
+            res = json.loads(res.text)
+            values = []
+            self.choiceslist = []#nomizw to eftiaksa...
+            for r in res["info"]:
+                u = from_Dict_to_User(r,self._current_user)
+                if not(u == None):#an den einai o current user
+                    self.choiceslist.append(u)
+                    values.append(u.get_username())
+            self.values = values
+            if len(values) > 0:
+                self.dropdown = DropDown()
+                mc = 0
+                for val in self.values:
+                    self.dropdown.add_widget(ChoiceButton(num = mc,text=val, size_hint_y=None, height=48, on_release=self.do_choose))
+                    mc+=1
+                self.dropdown.open(self)
+
+    def do_choose(self, butt):
+        #vasika xrhsimopoiw mono names gia filling...polu mnhmh xwris logo?
+        if self._for_location :
+            #8a kanei fill h 8a phgainei se location profile?
+            if self._profile_callback == None:
+                #8a kanei fill
+                self.text = self.choiceslist[butt.get_num()].get_name()#pairnw num apo koumpi
+            else:
+                self._profile_callback(self.choiceslist[butt.get_num()])
+            if self.dropdown:
+                self.dropdown.dismiss()
+                self.dropdown = None
+        else:
+            #8a phgainei se user profile
+            selected_user = self.choiceslist[butt.get_num()]#pairnw num apo koumpi
+            if self.dropdown:
+                self.dropdown.dismiss()
+                self.dropdown = None
+            #ke edw kalw callback gia tade user
+            self._profile_callback(user = selected_user)
+
+    def set_current_user(self,usr):
+        self._current_user = usr
+    def set_profile_callback(self,callback):
+        self._profile_callback = callback
+    def set_if_location(self,i = True):
+        self._for_location = i
+
 class FriendsLayout(BoxLayout):
     _user = None
     _search_profile_callback = None
@@ -157,20 +267,7 @@ def double_number_function(last):
         else:
             arr.append('0'+str(k))
     return arr
-#
-#Gia tous filous
-#
-#to main content && ScrollView gia friends
-class FriendsLayout(BoxLayout):
-    pass
-#to main content && ScrollView gia friends
-#to main content gia Friends
-class Friends_Layout(BoxLayout):
-    pass
-#to main content gia Friends
-#
-#Gia tous filous
-#
+
 #pop up event
 class myMarkerPopUp(MapMarkerPopup):
     _ev = None
@@ -329,7 +426,7 @@ class Event_Creation_Layout(BoxLayout):
         p = Profile_Layout(user = user,you = self._user,friend = int(res["info"]))
         #vazw to profile
         self.ids.aka.info_layout.add_widget(p)
-        
+
         return self.manager
 
 #tosubmitLayout
@@ -606,3 +703,14 @@ Builder.load_file('pointer_app.kv')
 
 if __name__ == "__main__":
     Main_App().run()
+
+
+def from_Dict_to_User(mdict,current_user,use = 0,frnum=0):#apey8eias opws to stelnei h vash
+    if use == 0:
+        u =  User(mdict["username"], mdict["email"],{'lat' : mdict["lat"], 'lon' : mdict["lon"]},mdict["points"])
+        if u.get_username() == current_user.get_username():
+            return None
+        else:
+            return u
+    else:
+        return User(mdict["username"], mdict["email"],{'lat' : mdict["lat"], 'lon' : mdict["lon"]},mdict["points"],online = mdict["online"]["data"],num_of_friends=frnum[0]["count(*)"])

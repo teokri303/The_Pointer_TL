@@ -85,62 +85,6 @@
         id : dismiss
         text : 'Dismiss'
 
-#oi filoi mesa se layout
-<FriendsLayout@BoxLayout>:
-    search4friends : search4friends
-    main_content : main_content
-    orientation : 'vertical'
-    BoxLayout :
-        id : search4friends
-        search_bar : search_bar
-        subutton : subutton
-        size_hint_y : 0.05
-        orientation : 'horizontal'
-        Chooser :
-            id : search_bar
-        Button :
-            id : subutton
-            size_hint_x : 0.25
-            text : 'Submit'
-            background_normal : 'button.png'
-
-    ScrollView :
-        id : main_content
-        friends : friends
-
-        do_scroll_x : False
-        do_scroll_y : True
-        always_overscroll : False
-
-        GridLayout :
-            height : self.minimum_height
-            id : friends
-            cols : 1
-            spacing : 2
-            size_hint_y : None
-
-<Friends_Layout@BoxLayout>:
-    ena_request : None
-    size_hint_y : None
-    orientation : 'horizontal'
-    user_info : user_info
-    to_profile : to_profile
-    canvas.before :
-        Color :
-            rgba : .5 , .1 , .75 , .7
-        Rectangle :
-            pos :self.pos
-            size : self.size
-    Label :
-        id : user_info
-        size_hint_y : None
-        height : 50
-    Button :
-        id : to_profile
-        text : 'Profile'
-        size_hint_y : None
-        background_normal : 'button.png'
-#oi filoi mesa se layout
 #to spinner sta events
 <ESpinner@Spinner>:
     size_hint : .3, .6
