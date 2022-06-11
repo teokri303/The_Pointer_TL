@@ -237,16 +237,37 @@ class FriendRequest_Layout(BoxLayout):
         self.ids.accept.bind(on_press = self.accept_friend_request)
         self.ids.reject.bind(on_press = self.reject_friend_request)
 
+    def accept_friend_request(self,instance,**kwargs):
+        self._friendrequest.accepted()
+        mc = myConnection(self._friendrequest.DictInfo(), 'accept_friend_request')
+        res = mc.send_dict()
+        #meta prepei na ginetai delete...
+        self._rm_callback(self._friendrequest.get_id())
+    def reject_friend_request(self,instance,**kwargs):
+        self._friendrequest.rejected()
+        mc = myConnection(self._friendrequest.DictInfo(), 'reject_friend_request')
+        res = mc.send_dict()
+        #meta prepei na ginetai delete...
+        self._rm_callback(self._friendrequest.get_id())
+#to main content gia FriendRequests
 #to main content && ScrollView gia FriendRequests
 class FriendsRequLayout(BoxLayout):
     _user = None
     _search_profile_callback = None
     _friendrequest_dict = {}
-    def __init__(self,usr,tocallback_profile=None,**kwargs):
+    def __init__(self,usr,tocallback_profile,**kwargs):
         super(FriendsRequLayout, self).__init__(**kwargs)
         #pairnw friend request apo vash
-        fr = []
         self._user = usr#apo auto 8a parw info gia friend request
+        mc = myConnection(self._user.DictInfo(), 'get_friend_request')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        #ftiaxnw friend requests apo res
+        fr = friend_request_creation(res)
+        self.ids.search4friends.search_bar.set_current_user(self._user)
+        #gia search pathma dropdown callback
+        self.ids.search4friends.search_bar.set_profile_callback(tocallback_profile)#8a htan kalo na checkarw ke server?
+        #self.ids.search4friends.subutton.bind(on_press = self.to_user_profile)
         if len(fr) == 0:
             self.ids.main_content.friend_requests.add_widget(Label(text = '\n\nIt\'s been quiet here...\nParticipate to Events to make new Friends !',font_size = '20px'))
         for i in range(0,len(fr)):
@@ -586,7 +607,7 @@ class Second_Screen(Screen):
         self.manager.current = 'second_light'
         #vgazw to map
         self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
-        fr = FriendsRequLayout(usr = self._user)
+        fr = FriendsRequLayout(usr = self._user,tocallback_profile = self.to_profile_with_u)
         self.ids.aka.info_layout.add_widget(fr)
         return self.manager
     #dhmiourgia event
@@ -788,6 +809,12 @@ def friends_creation(mdict):
     for i in mdict["info"]:
         friends.append( from_Dict_to_User(mdict = i,current_user = None,use = 1,frnum = mdict["count"].pop(0)) )
     return friends
+
+def friend_request_creation(mdict):
+    marr = []
+    for i in mdict["info"]:
+        marr.append(FriendRequest(id1 = i["id_1"],id2 = i["id_2"],user_1 = i["username_1"],user_2 = i["username_2"],sended = dt.datetime.strptime(i["sended"], "%Y-%m-%dT%H:%M:%S.%f%z"),state_1 = i["state_1"],state_2 = i["state_2"]))
+    return marr
 
 if __name__ == "__main__":
     Main_App().run()
