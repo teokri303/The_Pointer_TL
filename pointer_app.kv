@@ -1,3 +1,84 @@
+#to profile twn event
+<Event_Profile_Layout@BoxLayout> :
+    orientation : 'vertical'
+    pic_layout : pic_layout
+    info_layout : info_layout
+    Image :
+        id : pic_layout
+        source : 'src/88.png'
+        allow_stretch : True
+        size_hint : 1,.4
+    BoxLayout :
+        id : info_layout
+        name : name
+        lname : lname
+        starts : starts
+        ends : ends
+        private : private
+        points_g : points_g
+        points_r : points_r
+        cap : cap
+        joined : joined
+        creator : creator
+        control_buttons : control_buttons
+        orientation : 'vertical'
+        Profile_Labels :
+            id : name
+            size_hint : 1, .2
+            text : "[color=ffffff] Name : [/color]"
+        Profile_Labels :
+            id : lname
+            size_hint : 1, .2
+            text : "[color=ffffff] Location : [/color]"
+        Profile_Labels :
+            id : starts
+            size_hint : 1, .2
+            text : "[color=ffffff] Starting Date : [/color]"
+        Profile_Labels :
+            id : ends
+            size_hint : 1, .2
+            text : "[color=ffffff] Ending Date : [/color]"
+        Profile_Labels :
+            id : private
+            size_hint : 1, .2
+            text : "[color=ffffff] Privacy : [/color]"
+        Profile_Labels :
+            id : points_g
+            size_hint : 1, .2
+            text : "[color=ffffff] Points Gained : [/color]"
+        Profile_Labels :
+            id : points_r
+            size_hint : 1, .2
+            text : "[color=ffffff] Points Required : [/color]"
+        Profile_Labels :
+            id : cap
+            size_hint : 1, .2
+            text : "[color=ffffff] Capacity : [/color]"
+        Profile_Labels :
+            id : joined
+            size_hint : 1, .2
+            text : "[color=ffffff] Participators : [/color]"
+        Profile_Labels :
+            id : creator
+            size_hint : 1, .2
+            text : "[color=ffffff] Creator : [/color]"
+        BoxLayout :
+            id : control_buttons
+            jevent : jevent
+            unjevent : unjevent
+            invite : invite
+            orientation : 'horizontal'
+            size_hint : 1, .2
+            Button :
+                id : jevent
+                text : "Join Event"
+            Button :
+                id : unjevent
+                text : "Unjoin Event"
+            Button :
+                id : invite
+                text : "Invite"
+
 #join event main layout
 <JoinEvent@BoxLayout>:
     ongoing : ongoing
@@ -17,7 +98,7 @@
                     pos :self.pos
                     size : self.size
             text : 'Events Near You'
-            
+
         ScrollView :
             id : ongoing_events
             events_1 : events_1

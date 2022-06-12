@@ -18,7 +18,7 @@ class Event:
     _creator = None
     _participate = []
 
-    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_r = 0,cap = 0,prv = 0,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
+    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_r = 0,cap = 0,prv = 0,creator = None,participate = 0,starts = dt.datetime.today(),ends = dt.datetime.today()):
         #event info
         self._id = id
         self._name = name
@@ -93,8 +93,10 @@ class Event:
         return self._creator
     def get_users(self):
         return self._participate
-    def get_num_users(self):
-        return len(self._participate)
+    def incr(self):
+        self._participate +=1
+    def decr(self):
+        self._participate -=1
     #
     #event string
     #
