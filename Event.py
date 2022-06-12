@@ -9,7 +9,6 @@ class Event:
     _lon = 0.00
     _lat = 0.00
     _name = ""
-    _points_g = 0
     _points_r = 0
     _cap = 0
     _prv = False
@@ -19,13 +18,12 @@ class Event:
     _creator = None
     _participate = []
 
-    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_g = 0,points_r = 0,cap = 0,prv = 0,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
+    def __init__(self,id = 0,name = "",lon = 0.00,lat = 0.00,points_r = 0,cap = 0,prv = 0,creator = None,participate = [],starts = dt.datetime.today(),ends = dt.datetime.today()):
         #event info
         self._id = id
         self._name = name
         self._lat = lat
         self._lon = lon
-        self._points_g = points_g
         self._points_r = points_r
         self._cap = cap
         self._prv = prv
@@ -101,7 +99,7 @@ class Event:
     #event string
     #
     def toString(self):
-        return "Name : "+self._name + " Points Required : " +str(self._points_r)+" \nMax Capacity : "+str(self._cap)+" Number of People : "+str(len(self._participate))
+        return "Name : "+self._name + " Points Required : " +str(self._points_r)+" \nMax Capacity : "+str(self._cap)+" Number of People : "+str(self._participate)
     #
     #event string
     #
@@ -125,6 +123,22 @@ class Event:
         "creator_id" : self._creator.get_id() ,
         "participate" : self._participate, #sigoura 8elei moda
         "participators_num" : self.get_num_users()
+        }
+
+    def DictInfo_only_name(self):
+        return {
+        "id" : self._id,
+        "name" : self._name ,
+        "lon" : self._lon,
+        "lat" : self._lat,
+        "points_r" : self._points_r ,
+        "cap" : self._cap ,
+        "private" : self._prv,
+        "starts" : str(self._starts ),#paizei na 8elei moda
+        "ends" : str(self._ends) ,
+        #usr info
+        "creator_name" : self._creator,
+        "participate" : self._participate
         }
 
     def add_usr(self,usr):

@@ -469,6 +469,120 @@ app.all('/event_creation',async function (req, res) {
     }//end if
   });
 //event creation
+//gia get_available_events
+app.all('/get_available_events',function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end", () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        console.log(mdata);
+        var con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "softeng22",
+          multipleStatements: true
+        });
+        con.connect(function(err) {
+          console.log("Connected");
+          //dhmiourgia tetragwnou
+          //gia arxh 8a ta pernaw egw ta km
+          var the_rect = calcRectangle(mdata.coords,10);
+          console.log(the_rect);
+          const query = util.promisify(con.query).bind(con);//gia na exw promises
+          var mquery = "select * from event where (lat <= "+the_rect[0].latitude+" and lat >="+the_rect[2].latitude+" and lon <= "+the_rect[1].longitude+" and lon >= "+the_rect[3].longitude+");";
+          con.query(mquery, async function (err, result, fields) {
+            if (err){
+              throw err;
+            }
+            console.log(result);
+            message = {info : result};
+            res.write(JSON.stringify(message));
+            res.end();
+          });//telos query gia info
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//gia events_available
+//gia get_expired_events
+app.all('/get_expired_events',function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end", () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        console.log(mdata);
+        var con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "softeng22",
+          multipleStatements: true
+        });
+        con.connect(function(err) {
+          console.log("Connected");
+          const query = util.promisify(con.query).bind(con);//gia na exw promises
+          var mquery = "select t1.* from (select * from event )as t1 INNER JOIN (select * from to_event where uid = "+mdata.id+") as t2 on t1.id=t2.eid;";
+          con.query(mquery, async function (err, result, fields) {
+            if (err){
+              throw err;
+            }
+            console.log(result);
+            message = {info : result};
+            res.write(JSON.stringify(message));
+            res.end();
+          });//telos query gia info
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//gia events_available
 //vazw pou eimai
 app.all('/login',function (req, res) {
   console.log('Request received: ');
@@ -595,7 +709,16 @@ app.all('/register',function (req, res) {
 });
 //gia register
 
-
+function calcRectangle(coords,km)
+{
+  var i = 0;
+  var the_rect = []
+  while(i < 360){
+    the_rect.push( geolib.computeDestinationPoint({latitude : coords.lat,longitude : coords.lon}, km * 1000,i) );
+    i+=90;
+  }
+  return the_rect;
+}
 
 app.listen(8080, function() {
 console.log('Node app is running on port 8080');
