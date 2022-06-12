@@ -19,6 +19,65 @@ var app = express();
 app.set('views', path.join(__dirname, '/'));
 app.set('view engine', 'ejs');
 
+
+//gia updated event info
+app.all('/updated_event_info',function (req, res) {
+  console.log('Request received: ');
+  util.inspect(req) // this line helps you inspect the request so you can see whether the data is in the url (GET) or the req body (POST)
+  util.log('Request recieved: \nmethod: ' + req.method + '\nurl: ' + req.url) // this line logs just the method and url
+  if(req.method==='OPTIONS'){
+          res.writeHead(200);
+          res.end();
+    }else if(req.method==='POST'){
+      var body = [];
+      //h katallhlh kefalida
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin' : '*',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE'
+      });
+      //diavase data
+      req.on("data", (chunk) => {
+        console.log(chunk);
+        body.push(chunk);
+      });
+      //otan exeis diavasei olo to data
+      req.on("end", () => {
+        var mdata = Buffer.concat(body).toString();
+        mdata = JSON.parse(mdata);//parsing json
+        var con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Den8aKsexasw",
+          database: "mapp",
+          multipleStatements: true
+        });
+        con.connect(async function(err) {
+          var j = false;
+          console.log("Connected");
+          const query = util.promisify(con.query).bind(con);//gia na exw promises
+          //check if user has joined before
+          var mquery = "select * from to_event where uid="+mdata.user.id+" and eid="+mdata.event.id+";";
+          result = await query(mquery);
+          if (result.length > 0 ){
+            //user has joined...
+            j = true;
+          }
+          //only event info
+          var mquery = "select * from event where name like \'"+mdata.event.name+"\' and id="+mdata.event.id+";";
+          result = await query(mquery);
+          message = {info : result, joined : j};
+          res.write(JSON.stringify(message));
+          res.end();
+        });//telos connect
+
+      res.on('error', (err) => {
+        console.error(err);
+      });
+    });//req on end
+  }//end if
+});
+//gia updated event info
 //plh8os friends
 app.all('/get_friends',function (req, res) {
   console.log('Request received: ');

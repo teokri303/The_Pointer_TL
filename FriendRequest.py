@@ -9,7 +9,7 @@ class FriendRequest:
     _state_1 = None
     _state_2 = None
 
-    def __init__(self,user1,user2,id1,id2,sended=dt.datetime.today(),state_1='Accepted',state_2='Pending'):
+    def __init__(self,id1,id2,user1,user2,sended=dt.datetime.today(),state_1='Accepted',state_2='Pending'):
         self._id_1 = id1
         self._user1 = user1
         self._id_2 = id2
@@ -20,7 +20,8 @@ class FriendRequest:
 
     def set_state_2(self,state_2):
         self._state_2 = state_2
-
+    def get_id(self):#pairnw to id tou xrhsth pu esteile
+        return self._id_2
     def get_user_1(self):
         return self._user1
     def get_user_2(self):
@@ -31,7 +32,7 @@ class FriendRequest:
         return self._state_2
 
     def accept(self):
-        self._state_2 = 'Accepted'
+        self._state_1 = 'Accepted'
     def reject(self):
         self._state_1 = 'Rejected'
         self._state_2 = 'Rejected'

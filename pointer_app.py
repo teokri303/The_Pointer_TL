@@ -67,6 +67,128 @@ class MyBox(BoxLayout):
 class MyBoxL(BoxLayout):
     pass
 
+#to event profile
+class Event_Profile_Layout(BoxLayout) :
+    _ev = None
+    _usr = None
+    _update_user = None
+    _to_invite_user = None
+    _to_map = None
+    def __init__(self,ev,usr,update_user = None,to_invite_user = None,to_map = None,**kwargs):
+        super(Event_Profile_Layout, self).__init__(**kwargs)
+        #vazw to event
+        self._to_invite_user = to_invite_user
+        self._update_user = update_user
+        self._ev = ev
+        self._usr = usr
+        self._to_map = to_map
+        self.get_info()
+        #gia username text input
+        self.ids.info_layout.name.text = str(self.ids.info_layout.name.text) + self._ev.get_name()
+        self.ids.info_layout.starts.text = str(self.ids.info_layout.starts.text) + str(self._ev.get_starts().strftime("%m/%d/%Y, %H:%M:%S"))
+        self.ids.info_layout.ends.text = str(self.ids.info_layout.ends.text) + str(self._ev.get_ends().strftime("%m/%d/%Y, %H:%M:%S"))
+        self.ids.info_layout.private.text = str(self.ids.info_layout.private.text) + str(self._ev.get_prv_string())
+        self.ids.info_layout.points_r.text = str(self.ids.info_layout.points_r.text) + str(self._ev.get_points_r())
+        self.ids.info_layout.cap.text = str(self.ids.info_layout.cap.text) + str(self._ev.get_cap())
+        self.ids.info_layout.creator.text = str(self.ids.info_layout.creator.text) + str(self._ev.get_creator())
+        self.ids.info_layout.control_buttons.jevent.bind(on_press = self.join_event)
+        self.ids.info_layout.control_buttons.unjevent.bind(on_press = self.unjoin_event)
+        self.ids.info_layout.control_buttons.invite.bind(on_press = self.invite_at_event)
+        if is_old(self._ev):#afou etsi ke alliws an einai old den xreiazetai to cancel...
+            self.ids.info_layout.control_buttons.jevent.disabled = True
+            self.ids.info_layout.control_buttons.unjevent.disabled = True
+            self.ids.info_layout.control_buttons.invite.disabled = True
+        elif self._ev.get_creator() == self._usr.get_username() :#and self._ev.get_creator().get_id() == self._usr.get_id():
+            b = Button(text = 'Cancel Event')
+            b.bind(on_press = self.cancel_event)
+            self.ids.info_layout.control_buttons.add_widget(b)
+
+    def invite_at_event(self,instance,**kwargs):
+        self._to_invite_user(self._ev)
+    def cancel_event(self, instance, **kwargs):
+        mdict = {
+            "uid" : self._usr.get_id(),
+            "event" : self._ev.DictInfo(),
+            "to_return" : False
+        }
+
+        timezone = self._ev.get_starts().tzinfo
+        # Current datetime for the timezone of your variable
+        now_in_timezone = dt.datetime.now(timezone)
+        if (self._ev.get_starts() - now_in_timezone).total_seconds() / 60.0 > 20 :
+            #points go back
+            mdict["to_return"] = True
+        print(str(mdict))
+        mc = myConnection(mdict, 'cancel_event')
+        res = mc.send_dict()
+        #vale ke pontoys
+        self._usr.point_sum(self._ev.get_points_r())
+        self._update_user(self._usr.get_points())
+        #meta paei to map
+        self._to_map(None)
+
+    def get_info(self):
+        mdict = {
+        "user" : self._usr.DictInfo(),
+        "event" : self._ev.DictInfo_only_name()
+        }
+        mc = myConnection(mdict, 'updated_event_info')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        self._event = event_creation(res)
+        self.ids.info_layout.joined.text = "Participators : " + str(self._ev.get_users())#xreiazetai
+        self.ids.info_layout.control_buttons.jevent.disabled = res["joined"]
+        self.ids.info_layout.control_buttons.invite.disabled = not res["joined"]
+        self.ids.info_layout.control_buttons.unjevent.disabled = not (res["joined"])
+
+    def join_event(self,instance , **kwargs):
+        #edw stelnw
+        if self._usr.get_points() > self._ev.get_points_r() :
+            if self._ev.get_num_users() > self._ev.get_cap() :
+                #me ena pop_up
+                popup = Popup(title='Error',content=Label(text="Event is Full !"),size_hint=(None, None), size=(275,125))
+                popup.open()
+            else:
+                self._usr.point_sum((-1) * self._ev.get_points_r())
+                self._update_user(self._usr.get_points())
+                mdict = {
+                    "user" : self._usr.user_dict(),
+                    "event" : self._ev.DictInfo()
+                    }
+                mc = myConnection(mdict, 'join_event')
+                res = mc.send_dict()
+                res = json.loads(res.text)
+                #meta prepei na kanw update padou entos tou app
+                #me ena pop_up
+                self._ev.incr()
+                #disabilities
+                self.get_info()
+                popup = Popup(title='Success',content=Label(text=res["msg"]),size_hint=(None, None), size=(275,125))
+                popup.open()
+        else:
+            #me ena pop_up
+            popup = Popup(title='Error',content=Label(text="You don\'t have enough points to join."),size_hint=(None, None), size=(275,125))
+            popup.open()
+
+    def unjoin_event(self,instance , **kwargs):
+        self._usr.point_sum(self._ev.get_points_r())
+        self._update_user(self._usr.get_points())
+        mdict = {
+            "user" : self._usr.user_dict(),
+            "event" : self._ev.DictInfo()
+            }
+        mc = myConnection(mdict, 'unjoin_event')
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        #disabilities
+        self._ev.decr()
+        self.get_info()
+        #meta prepei na kanw update padou entos tou app
+        #me ena pop_up
+        popup = Popup(title='Error',content=Label(text=res["msg"]),size_hint=(None, None), size=(275,125))
+        popup.open()
+
+#to event profile
 #to main content gia JoinEvent
 class JoinEvent_Layout(BoxLayout):
     _event = None
@@ -76,7 +198,7 @@ class JoinEvent_Layout(BoxLayout):
         super(JoinEvent_Layout, self).__init__(**kwargs)
         #prepei na to gemiseis
         self._event = event
-        self.ids.event_info.text = self._event.StringInfo()
+        self.ids.event_info.text = self._event.toString()
         #8elw callback gia JoinEvent
         self._join_callback = join_callback
         self.ids.join.bind(on_press = self.join_event)
@@ -90,7 +212,7 @@ class JoinEvent_Layout(BoxLayout):
     #gia na kanw join event
     def join_event(self,instance,**kwargs):
         self._join_callback(self._event)
-        self.ids.event_info.text = self._event.StringInfo()
+        self.ids.event_info.text = self._event.toString()
 #to main content gia JoinEvent
 
 #to main content && ScrollView gia JoinEvent
@@ -106,7 +228,7 @@ class JoinEvent(BoxLayout):
         self._update_user = update_user
         self._more_details = more_details#auto to callback gia na phgainw se event_profile
         self._user = usr#apo auto 8a parw info gia events near kai an einai private
-        mc = myConnection(self._user.user_dict(), 'get_available_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
+        mc = myConnection(self._user.DictInfo(), 'get_available_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
         res = mc.send_dict()
         res = json.loads(res.text)
         #ftiaxnw event apo res
@@ -119,7 +241,7 @@ class JoinEvent(BoxLayout):
             e = JoinEvent_Layout(ev[i],join_callback = self.join_event,details_callback = self.to_event_profile)
             self._event_dict[str(ev[i].get_id())] = i
             self.ids.ongoing.ongoing_events.events_1.add_widget(e)
-        mc = myConnection(self._user.user_dict(), 'get_expired_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
+        mc = myConnection(self._user.DictInfo(), 'get_expired_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
         res = mc.send_dict()
         res = json.loads(res.text)
         #ftiaxnw event apo res
@@ -136,17 +258,17 @@ class JoinEvent(BoxLayout):
 
     def join_event(self,e):
         #edw stelnw
-        ev = e.DictInfo()
-        if self._user.get_points() > ev["points_required"] :
-            if ev["participators_num"] > ev["capacity"] :
+        ev = e.DictInfo_only_name()
+        if self._user.get_points() > ev["points_r"] :
+            if ev["participate"] > ev["cap"] :
                 #me ena pop_up
                 popup = Popup(title='Error',content=Label(text="Event is Full !"),size_hint=(None, None), size=(275,125))
                 popup.open()
             else:
-                self._user.point_sum((-1) * ev["points_required"])
+                self._user.point_sum((-1) * ev["points_r"])
                 self._update_user(self._user.get_points())
                 mdict = {
-                    "user" : self._user.user_dict(),
+                    "user" : self._user.DictInfo(),
                     "event" : ev
                     }
                 mc = myConnection(mdict, 'join_event')
@@ -310,7 +432,7 @@ class Friends_Layout(BoxLayout):
         self._to_invite = to_invite
         self._event = event
         #ksereis oti prepei na to gemiseis
-        self.ids.user_info.text = self._friend.StringInfo()
+        self.ids.user_info.text = self._friend.toString()
         if to_invite :
             self.ids.to_profile.text = 'Invite'
             #kalutera apla na stelnei inv
@@ -503,7 +625,7 @@ class Event_Creation_Layout(BoxLayout):
         dt_value_1 = self.ids.info_layout.event_datetimes_1.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_1.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_1.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_1.ids.spinner_minute.text
         dt_value_2 = self.ids.info_layout.event_datetimes_2.ids.spinner_year.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_month.text+'/'+self.ids.info_layout.event_datetimes_2.ids.spinner_day.text+' '+self.ids.info_layout.event_datetimes_2.ids.spinner_hour.text+':'+self.ids.info_layout.event_datetimes_2.ids.spinner_minute.text
 
-        self._to_map(e = Event(name = str(self.ids.info_layout.name.text), points_g = int(self.ids.info_layout.points_earned.text),cap = int(self.ids.info_layout.capacity.text),creator = self._user,starts = dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M'),ends = dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M')))
+        self._to_map(e = Event(name = str(self.ids.info_layout.name.text), points_r = int(self.ids.info_layout.points_earned.text),cap = int(self.ids.info_layout.capacity.text),creator = self._user,starts = dt.datetime.strptime(dt_value_1, '%Y/%B/%d %H:%M'),ends = dt.datetime.strptime(dt_value_2, '%Y/%B/%d %H:%M')))
 
     def start_spinners(self):
         #prepei na pairnoun times
@@ -756,14 +878,27 @@ class Second_Screen(Screen):
 
         return self.manager
 
-        #paw se events
+    #otan allazoun oi pontoi
+    def update_user(self,p):
+        self._user.set_points(p)
+    #paw se events
     def to_events(self,instance,**kwargs):
         self.manager.current = 'second_light'
         #vgazw to map
         self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
         fr = JoinEvent(usr = self._user,update_user = self.update_user,more_details = self.to_profile_with_ev)#8a allaksei
         self.ids.aka.info_layout.add_widget(fr)
-        self.disable_mapp_opp_buttons()
+
+        return self.manager
+    #paw sto profile tu event
+    def to_profile_with_ev(self,ev,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        p = Event_Profile_Layout(ev,self._user,self.update_user,to_invite_user = None,to_map = self.to_map)#location = loc,you = self._user
+        #vazw to profile
+        self.ids.aka.info_layout.add_widget(p)
+
         return self.manager
 #Log In Screen
 class First_Screen(Screen):
@@ -923,6 +1058,42 @@ def friend_request_creation(mdict):
     for i in mdict["info"]:
         marr.append(FriendRequest(id1 = i["id_1"],id2 = i["id_2"],user1 = i["username_1"],user2 = i["username_2"],sended = dt.datetime.strptime(i["sended"], "%Y-%m-%dT%H:%M:%S.%f%z"),state_1 = i["state_1"],state_2 = i["state_2"]))
     return marr
+
+def event_creation(mdict):
+    #def __init__(self,id,name,location,points_g,points_r,cap,prv,creator,participate,starts,ends
+    events = []
+    for i in mdict["info"]:
+        events.append(Event(id = i["id"],name = i["name"],lon = i["lon"],lat = i['lat'],points_r = i["points_r"],cap = i["cap"],prv = i["private"]["data"],creator = i['creator_name'],participate = i['counter'],starts = dt.datetime.strptime(i['starts'], "%Y-%m-%dT%H:%M:%S.%f%z"),ends = dt.datetime.strptime(i['ends'], "%Y-%m-%dT%H:%M:%S.%f%z")))
+    return events
+
+def keep_new_events(ev):
+    arr = []
+    for e in ev:
+        timezone = e.get_ends().tzinfo
+        # Current datetime for the timezone of your variable
+        now_in_timezone = dt.datetime.now(timezone)
+        if e.get_ends() >= now_in_timezone:
+            arr.append(e)
+    return arr
+
+def keep_old_events(ev):
+    arr = []
+    for e in ev:
+        timezone = e.get_ends().tzinfo
+        # Current datetime for the timezone of your variable
+        now_in_timezone = dt.datetime.now(timezone)
+        if e.get_ends() < now_in_timezone:
+            arr.append(e)
+    return arr
+
+def is_old(ev):
+    timezone = ev.get_ends().tzinfo
+    # Current datetime for the timezone of your variable
+    now_in_timezone = dt.datetime.now(timezone)
+    if ev.get_ends() < now_in_timezone:
+        return True
+    else:
+        return False
 
 if __name__ == "__main__":
     Main_App().run()
