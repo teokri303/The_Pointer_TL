@@ -67,6 +67,107 @@ class MyBox(BoxLayout):
 class MyBoxL(BoxLayout):
     pass
 
+#to main content gia JoinEvent
+class JoinEvent_Layout(BoxLayout):
+    _event = None
+    _join_callback = None
+    _details_callback = None
+    def __init__(self,event,join_callback,details_callback,dis = False,**kwargs):
+        super(JoinEvent_Layout, self).__init__(**kwargs)
+        #prepei na to gemiseis
+        self._event = event
+        self.ids.event_info.text = self._event.StringInfo()
+        #8elw callback gia JoinEvent
+        self._join_callback = join_callback
+        self.ids.join.bind(on_press = self.join_event)
+        self.ids.join.disabled = dis#an einai palio event
+        #8elw callback gia event profile
+        self._details_callback = details_callback
+        self.ids.details.bind(on_press = self.event_details)
+    #gia na phgainw se event profile
+    def event_details(self,instance,**kwargs):
+        self._details_callback(self._event)
+    #gia na kanw join event
+    def join_event(self,instance,**kwargs):
+        self._join_callback(self._event)
+        self.ids.event_info.text = self._event.StringInfo()
+#to main content gia JoinEvent
+
+#to main content && ScrollView gia JoinEvent
+class JoinEvent(BoxLayout):
+    _user = None
+    _update_user = None
+    _event_dict = {}
+    _more_details = None
+
+    def __init__(self,usr,update_user,more_details,**kwargs):
+        super(JoinEvent, self).__init__(**kwargs)
+        #pairnw friend request apo vash
+        self._update_user = update_user
+        self._more_details = more_details#auto to callback gia na phgainw se event_profile
+        self._user = usr#apo auto 8a parw info gia events near kai an einai private
+        mc = myConnection(self._user.user_dict(), 'get_available_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        #ftiaxnw event apo res
+        ev = event_creation(res)
+        if len(ev) > 1:
+            ev = keep_new_events(ev[::-1])
+        else:
+            ev = keep_new_events(ev)
+        for i in range(0,len(ev)):
+            e = JoinEvent_Layout(ev[i],join_callback = self.join_event,details_callback = self.to_event_profile)
+            self._event_dict[str(ev[i].get_id())] = i
+            self.ids.ongoing.ongoing_events.events_1.add_widget(e)
+        mc = myConnection(self._user.user_dict(), 'get_expired_events')#ta oloklhrwmena kai ta mh oloklhrwmena events
+        res = mc.send_dict()
+        res = json.loads(res.text)
+        #ftiaxnw event apo res
+        ev = event_creation(res)
+        if len(ev) > 1:
+            ev = keep_old_events(ev[::-1])
+        else:
+            ev = keep_old_events(ev)
+        for i in range(0,len(ev)):
+            e = JoinEvent_Layout(ev[i],join_callback = self.join_event,details_callback = self.to_event_profile,dis = True)
+            self._event_dict[str(ev[i].get_id())] = i
+            #f.bind(minimum_height = f.setter('height'))
+            self.ids.expired.expired_events.events_2.add_widget(e)
+
+    def join_event(self,e):
+        #edw stelnw
+        ev = e.DictInfo()
+        if self._user.get_points() > ev["points_required"] :
+            if ev["participators_num"] > ev["capacity"] :
+                #me ena pop_up
+                popup = Popup(title='Error',content=Label(text="Event is Full !"),size_hint=(None, None), size=(275,125))
+                popup.open()
+            else:
+                self._user.point_sum((-1) * ev["points_required"])
+                self._update_user(self._user.get_points())
+                mdict = {
+                    "user" : self._user.user_dict(),
+                    "event" : ev
+                    }
+                mc = myConnection(mdict, 'join_event')
+                res = mc.send_dict()
+                res = json.loads(res.text)
+                #prepei counter event +=1
+                if res["info"]:
+                    e.incr()
+                #meta prepei na kanw update padou entos tou app
+                #me ena pop_up
+                popup = Popup(title='Success',content=Label(text=res["msg"]),size_hint=(None, None), size=(275,125))
+                popup.open()
+        else:
+            #me ena pop_up
+            popup = Popup(title='Error',content=Label(text="You don\'t have enough points to join."),size_hint=(None, None), size=(275,125))
+            popup.open()
+
+    def to_event_profile(self,ev):
+        self._more_details(ev)
+#to main content && ScrollView gia JoinEvent
+
 class ChoiceButton(Button):
     #krataei ena number
     _num = 0
@@ -653,6 +754,16 @@ class Second_Screen(Screen):
         #vazw to profile
         self.ids.aka.info_layout.add_widget(p)
 
+        return self.manager
+
+        #paw se events
+    def to_events(self,instance,**kwargs):
+        self.manager.current = 'second_light'
+        #vgazw to map
+        self.ids.aka.info_layout.remove_widget(self.manager.children[0].ids.aka.info_layout.children[0])
+        fr = JoinEvent(usr = self._user,update_user = self.update_user,more_details = self.to_profile_with_ev)#8a allaksei
+        self.ids.aka.info_layout.add_widget(fr)
+        self.disable_mapp_opp_buttons()
         return self.manager
 #Log In Screen
 class First_Screen(Screen):

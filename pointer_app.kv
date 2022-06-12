@@ -1,3 +1,93 @@
+#join event main layout
+<JoinEvent@BoxLayout>:
+    ongoing : ongoing
+    expired : expired
+    orientation : 'vertical'
+
+    BoxLayout :
+        id : ongoing
+        ongoing_events : ongoing_events
+        orientation : 'vertical'
+        Label :
+            size_hint_y : 0.15
+            canvas.before :
+                Color :
+                    rgba : .055,.25,.55,1
+                Rectangle :
+                    pos :self.pos
+                    size : self.size
+            text : 'Events Near You'
+        ScrollView :
+            id : ongoing_events
+            events_1 : events_1
+            do_scroll_x : False
+            do_scroll_y : True
+            always_overscroll : False
+
+            GridLayout :
+                height : self.minimum_height
+                id : events_1
+                cols : 1
+                spacing : 2
+                size_hint_y : None
+
+    BoxLayout :
+        id : expired
+        expired_events : expired_events
+        orientation : 'vertical'
+        Label :
+            size_hint_y : 0.15
+            canvas.before :
+                Color :
+                    rgba : .055,.25,.55,1
+                Rectangle :
+                    pos :self.pos
+                    size : self.size
+            text : 'Expired Events'
+        ScrollView :
+            id : expired_events
+            events_2 : events_2
+
+            do_scroll_x : False
+            do_scroll_y : True
+            always_overscroll : False
+
+            GridLayout :
+                height : self.minimum_height
+                id : events_2
+                cols : 1
+                spacing : 2
+                size_hint_y : None
+#join event main layout
+<JoinEvent_Layout@BoxLayout>:
+    ena_event : None
+    size_hint_y : None
+    orientation : 'horizontal'
+    event_info : event_info
+    details : details
+    join : join
+    canvas.before :
+        Color :
+            rgba : .5 , .1 , .75 , .7
+        Rectangle :
+            pos :self.pos
+            size : self.size
+    Label :
+        id : event_info
+        size_hint_y : None
+        height : 75
+    Button :
+        id : details
+        text : 'Details'
+        size_hint_y : None
+        size_hint_x : 0.2
+    Button :
+        id : join
+        text : 'Join'
+        size_hint_y : None
+        size_hint_x : 0.2
+#join event details layout
+
 <FriendsLayout@BoxLayout>:
     search4friends : search4friends
     main_content : main_content

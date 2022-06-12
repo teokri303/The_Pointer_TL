@@ -167,7 +167,7 @@ app.all('/accept_friend_request',function (req, res) {
         con.connect(function(err) {
           console.log("Connected");
           const query = util.promisify(con.query).bind(con);//gia na exw promises
-          var mquery = "UPDATE friend_request SET state_1= \'" + mdata.state_1 + "\',state_2=\'" + mdata.state_2 + "\' WHERE (username_1 like \'"+mdata.self+"\'AND username_2 like \'"+mdata.you+"\') OR"+"(username_1 like \'"+mdata.you+"\'AND username_2 like \'"+mdata.self+"\')"+";";
+          var mquery = "UPDATE friend_request SET state_1= \'" + mdata.state_1 + "\',state_2=\'" + mdata.state_2 + "\' WHERE (username_1 like \'"+mdata.sender+"\'AND username_2 like \'"+mdata.receiver+"\') OR"+"(username_1 like \'"+mdata.receiver+"\'AND username_2 like \'"+mdata.sender+"\')"+";";
           con.query(mquery, function (err, result, fields) {
             if (err){
               throw err;
